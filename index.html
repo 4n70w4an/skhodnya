@@ -94,7 +94,7 @@
   .grid.list{grid-template-columns:1fr;gap:6px}
 
   .cardwrap{position:relative;min-width:0}
-  .card{display:flex;gap:11px;align-items:flex-start;text-decoration:none;color:inherit;background:var(--panel);
+  .card{position:relative;display:flex;gap:11px;align-items:flex-start;text-decoration:none;color:inherit;background:var(--panel);
     border:1px solid var(--line);border-radius:var(--radius);padding:12px;height:100%;
     transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
   .card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
@@ -142,13 +142,13 @@
   .favorites .section-head h2{color:var(--accent)}
   .empty{text-align:center;color:var(--dim);padding:70px 0;font-size:15px}
   .groups-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-  .gtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:14px;background:var(--panel);
+  .gtile{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:16px 14px;background:var(--panel);
     border:1px solid var(--line);border-radius:var(--radius);text-align:left;min-height:110px}
   .gtile:hover{border-color:var(--accent)}
-  .gtile .gi{display:flex;gap:4px;flex-wrap:wrap}
-  .gtile .gi .fav{width:22px;height:22px;flex-basis:22px;font-size:10px}
+  .gtile .gi{display:grid;grid-template-columns:repeat(3, auto);gap:6px;justify-content:center;width:100%;padding:0 4px}
+  .gtile .gi .fav{width:34px;height:34px;flex-basis:34px;font-size:14px;border-radius:9px}
   .gtile .gt{font-weight:600}
-  .gtile .gc{font-size:11px;color:var(--dim);margin-top:auto}
+  .gtile .gc{font-size:11px;color:var(--dim);margin-top:auto;text-align:center}
   .gtile-more{position:absolute;right:10px;bottom:10px;width:30px;height:30px;border-radius:9px;
     display:grid;place-items:center;color:var(--dim);background:color-mix(in srgb,var(--panel-2) 65%,transparent);
     border:1px solid var(--line);backdrop-filter:blur(4px);font-size:14px;line-height:1}
@@ -262,7 +262,7 @@
   .sw{display:flex;gap:3px;flex:0 0 auto}
   .sw i{width:12px;height:12px;border-radius:4px;display:block;border:1px solid rgba(255,255,255,.16)}
   .bookmarklet{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:9px;
-    background:var(--panel);border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:13px;font-weight:500}
+    background:var(--panel);border:1px solid var(--line);color:var(--text);text-decoration:none !important;font-size:13px;font-weight:500}
   .bookmarklet:hover{background:var(--panel-2);border-color:color-mix(in srgb,var(--line) 55%,var(--accent) 45%)}
   .bm-hint{font-size:13.5px;color:var(--text);margin:0 0 10px}
 
@@ -486,7 +486,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.1.3',
+  version: '0.1.4',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -1255,7 +1255,7 @@ function openSettings() {
     '<p class="hint">Скан смотрит папку закладок на сервере. Если манифеста нет, он создастся сам по найденным воркспейсам.</p>' +
     '<h3>Добавить в Сходню</h3>' +
     '<p class="bm-hint">Перетащите кнопку на панель закладок — текущая вкладка добавится в Сходню в один клик.</p>' +
-    '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ Добавить в Сходню</a>';
+    '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">Добавить в Сходню</a>';
   modal({ title: 'Настройки', body: wrap, wide: true, actions: [{ label: 'Закрыть', onClick: (close) => close() }] });
   const cb = wrap.querySelector('#motion-cb');
   cb.onchange = () => { state.motion = cb.checked; store.set('motion', state.motion); document.documentElement.classList.toggle('no-motion', !state.motion); };

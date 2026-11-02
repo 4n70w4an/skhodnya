@@ -134,7 +134,7 @@
         if (!dot) {
           dot = document.createElement('span');
           dot.className = 'hc-dot';
-          wrap.appendChild(dot);
+          (card || wrap).appendChild(dot);
         }
         const rows = cs.map((c, i) => ({ it, c, i }));
         const st = statusOf(rows);
@@ -168,8 +168,6 @@
       const st = statusOf(rows);
       dot.className = 'hc-dot ' + st;
       dot.setAttribute('aria-label', 'Проверки группы: ' + (st === 'down' ? 'есть недоступные' : st === 'up' ? 'всё доступно' : 'ожидание'));
-      const pane = paneFor(tile);
-      pane.innerHTML = '<div class="hc-ptitle">Проверки</div>' + rows.map((r) => rowHTML(r.it, r.c, r.i, true)).join('');
     });
   }
 

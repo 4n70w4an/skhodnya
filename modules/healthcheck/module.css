@@ -3,8 +3,8 @@
 /* кружок на карточке */
 .hc-dot {
   position: absolute;
-  left: -4px;
-  top: -4px;
+  left: 6px;
+  top: 6px;
   width: 8px;
   height: 8px;
   border-radius: 50%;

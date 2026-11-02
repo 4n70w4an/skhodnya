@@ -95,7 +95,7 @@
 
   .cardwrap{position:relative;min-width:0}
   .card{position:relative;display:flex;gap:11px;align-items:flex-start;text-decoration:none;color:inherit;background:var(--panel);
-    border:1px solid var(--line);border-radius:var(--radius);padding:12px;height:100%;
+    border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 12px 22px;height:100%;
     transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
   .card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
   .fav{width:26px;height:26px;border-radius:7px;flex:0 0 26px;display:grid;place-items:center;font-size:12px;font-weight:700;
@@ -150,7 +150,7 @@
   .gtile-head .count{font-size:11px;color:var(--dim);background:var(--panel-2);border:1px solid var(--line);
     border-radius:99px;padding:1px 7px}
   .gtile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;width:100%}
-  .gt-mini .card{padding:8px;gap:8px;align-items:center;background:var(--panel-2)}
+  .gt-mini .card{padding:8px 8px 8px 20px;gap:8px;align-items:center;background:var(--panel-2)}
   .gt-mini .fav{width:28px;height:28px;flex-basis:28px;font-size:12px}
   .gt-mini .title{font-size:12.5px}
   .gt-mini .note{font-size:10.5px;margin-top:1px;line-height:1.25}
@@ -493,7 +493,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.1.6',
+  version: '0.1.7',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {

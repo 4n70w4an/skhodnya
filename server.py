@@ -168,10 +168,7 @@ def _workspace_files():
     return out
 
 
-def scan_workspaces():
-    manifest = read_manifest() or {}
-    workspaces = manifest.get("workspaces") if isinstance(manifest.get("workspaces"), list) else []
-    known = {str(w.get("file")) for w in workspaces if isinstance(w, dict)}
+def collect_workspaces():
     items = []
     for rel, path in _workspace_files():
         page = read_json(path) or {}
@@ -179,8 +176,50 @@ def scan_workspaces():
             "file": rel,
             "id": str(page.get("id") or path.stem),
             "title": str(page.get("title") or path.stem),
-            "inManifest": rel in known,
         })
+    return items
+
+
+def ensure_manifest():
+    """Если манифеста нет — собрать его из найденных воркспейсов."""
+    existing = read_manifest()
+    if isinstance(existing, dict) and isinstance(existing.get("workspaces"), list):
+        return existing
+    items = collect_workspaces()
+    if not items:
+        return None
+    workspaces = []
+    ids = set()
+    for item in items:
+        base = _slug(item["id"])
+        ws_id = base
+        n = 2
+        while ws_id in ids:
+            ws_id = f"{base}-{n}"
+            n += 1
+        ids.add(ws_id)
+        workspaces.append({"id": ws_id, "title": item["title"], "file": item["file"]})
+    manifest = {
+        "title": "Сходня",
+        "subtitle": "",
+        "defaultWorkspace": workspaces[0]["id"],
+        "workspaces": workspaces,
+    }
+    try:
+        write_manifest(manifest)
+    except OSError as exc:
+        print(f"[Сходня] не удалось создать манифест: {exc}")
+    return manifest
+
+
+def scan_workspaces():
+    manifest = read_manifest() or {}
+    workspaces = manifest.get("workspaces") if isinstance(manifest.get("workspaces"), list) else []
+    known = {str(w.get("file")) for w in workspaces if isinstance(w, dict)}
+    items = []
+    for item in collect_workspaces():
+        item["inManifest"] = item["file"] in known
+        items.append(item)
     return items, manifest
 
 
@@ -297,6 +336,7 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/config":
             return self.json(config_payload())
         if path == "/api/scan":
+            ensure_manifest()
             items, manifest = scan_workspaces()
             return self.json({"items": items, "manifest": manifest or {}, "dataDir": str(DATA_DIR)})
         if path == "/api/browse":
@@ -316,7 +356,6 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/unlock": self.api_unlock,
             "/api/save": self.api_save,
             "/api/copy": self.api_copy,
-            "/api/import": self.api_import,
             "/api/manifest/add": self.api_manifest_add,
             "/api/config": self.api_set_config,
             "/api/workspace/create": self.api_create_workspace,
@@ -383,6 +422,7 @@ class Handler(SimpleHTTPRequestHandler):
         global DATA_DIR
         DATA_DIR = path
         save_config()
+        ensure_manifest()
         return self.json(config_payload())
 
     # ---------- блокировки ----------
@@ -482,51 +522,6 @@ class Handler(SimpleHTTPRequestHandler):
             locks[rel] = {"client": client, "token": secrets.token_hex(8), "ts": now}
         return self.json({"file": rel, "ws": ws_id, "manifest": manifest})
 
-    # ---------- импорт папки с компьютера ----------
-    def api_import(self, p: dict):
-        files = p.get("files") or []
-        if not isinstance(files, list) or not files:
-            return self.json({"error": "bad request"}, 400)
-        manifest = read_manifest() or {}
-        if not isinstance(manifest.get("workspaces"), list):
-            return self.json({"error": "манифест не читается — проверьте manifest.json"}, 400)
-        known = {str(w.get("file")) for w in manifest["workspaces"] if isinstance(w, dict)}
-        ids = {str(w.get("id")) for w in manifest["workspaces"] if isinstance(w, dict)}
-        added = []
-        for item in files[:80]:
-            if not isinstance(item, dict):
-                continue
-            name = str(item.get("name") or "")
-            content = item.get("content")
-            if not isinstance(content, str) or len(content.encode("utf-8")) > 2 * 1024 * 1024:
-                continue
-            page = parse_workspace_text(content)
-            if page is None:
-                continue
-            stem = _slug(Path(name).stem) or "workspace"
-            n = 2
-            target = DATA_DIR / f"{stem}.json"
-            while target.exists():
-                target = DATA_DIR / f"{stem}-{n}.json"
-                n += 1
-            target.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            rel = rel_for(target)
-            title = str(page.get("title") or stem)
-            base = _slug(str(page.get("id") or stem))
-            ws_id = base
-            n = 2
-            while ws_id in ids:
-                ws_id = f"{base}-{n}"
-                n += 1
-            entry = {"id": ws_id, "title": title, "file": rel}
-            manifest["workspaces"].append(entry)
-            known.add(rel)
-            ids.add(ws_id)
-            added.append(entry)
-        if added:
-            write_manifest(manifest)
-        return self.json({"ok": True, "added": added, "manifest": manifest})
-
     # ---------- манифест ----------
     def api_manifest_add(self, p: dict):
         files = p.get("files") or []
@@ -574,7 +569,11 @@ class Handler(SimpleHTTPRequestHandler):
             target = DATA_DIR / f"{base}-{n}.json"
             n += 1
         page = {"id": base, "title": title, "subtitle": "", "groups": []}
-        target.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        try:
+            target.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        except OSError:
+            return self.json({"error": "папка недоступна для записи",
+                              "hint": "Выберите другую папку закладок в настройках"}, 400)
         rel = rel_for(target)
         manifest = read_manifest() or {}
         if not isinstance(manifest.get("workspaces"), list):
@@ -633,6 +632,7 @@ def main() -> None:
         else:
             print(f"[Сходня] папка не найдена: {candidate}")
 
+    ensure_manifest()
     load_modules()
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Сходня: http://{args.host}:{args.port}")

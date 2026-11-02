@@ -165,7 +165,16 @@
   .folder-path{flex:1;min-width:0;font-family:var(--mono);font-size:12px;color:var(--dim);
     background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .browse{display:flex;flex-direction:column;gap:8px}
+  .browse{display:flex;flex-direction:column;gap:8px;position:relative}
+  .browse-bar{display:flex;gap:8px;align-items:center}
+  .browse-input{flex:1;font-family:var(--mono);font-size:13px;padding:10px 12px}
+  .browse-more{flex:0 0 auto;font-size:18px;line-height:1;padding:8px 12px}
+  .browse-menu{display:flex;flex-direction:column;gap:4px;max-height:44vh;overflow:auto;
+    padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+  .browse-hint{color:var(--dim);font-size:12px}
+  .settings-row button{background:color-mix(in srgb,var(--panel) 72%,var(--accent) 7%);
+    border-color:color-mix(in srgb,var(--line) 60%,var(--accent) 40%);font-weight:500}
+  .settings-row button:hover{background:var(--panel-2);border-color:var(--accent)}
   .browse-path{font-family:var(--mono);font-size:12px;color:var(--dim);padding:8px 10px;
     border:1px solid var(--line);border-radius:8px;background:var(--panel-2);word-break:break-all}
   .browse-list{display:flex;flex-direction:column;gap:4px;max-height:46vh;overflow:auto}
@@ -420,7 +429,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.0.7',
+  version: '0.0.8',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -1167,9 +1176,8 @@ function openSettings() {
     '<div class="folder-row"><code class="folder-path">' + esc(state.dataDir || 'папка не выбрана') + '</code>' +
       '<button data-action="pick-folder">Выбрать папку…</button></div>' +
     '<div class="settings-row"><button data-action="create-ws">Создать воркспейс</button>' +
-      '<button data-action="scan-ws">Сканировать папку</button>' +
-      '<button data-action="import-folder">Импорт с компьютера…</button></div>' +
-    '<p class="hint">Скан смотрит папку закладок на сервере. Импорт читает JSON-файлы на твоём компьютере и загружает их на сервер — работает и с удалённым сервером.</p>' +
+      '<button data-action="scan-ws">Сканировать папку</button></div>' +
+    '<p class="hint">Скан смотрит папку закладок на сервере. Если манифеста нет, он создастся сам по найденным воркспейсам.</p>' +
     '<h3>Букмарклет</h3><p style="font-size:13px">Перетащите ссылку на панель закладок — добавлять текущую страницу в Сходню в один клик.</p>' +
     '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ в Сходню</a>';
   modal({ title: 'Настройки', body: wrap, wide: true, actions: [{ label: 'Закрыть', onClick: (close) => close() }] });
@@ -1187,16 +1195,35 @@ async function pickFolder(path) {
 
   const body = document.createElement('div');
   body.className = 'browse';
-  const rows = (data.dirs || []).map((d) =>
+  const menuRows = (data.dirs || []).map((d) =>
     '<button class="dir-row" data-action="dir-open" data-path="' + esc(d.path) + '">' +
     '<span>' + esc(d.name) + '</span>' +
     (d.writable ? '' : '<span class="dir-ro">только чтение</span>') +
     '</button>').join('');
-  body.innerHTML = '<div class="browse-path">' + esc(data.path) + '</div>' +
-    '<div class="browse-list">' +
-    (data.parent ? '<button class="dir-row up" data-action="dir-open" data-path="' + esc(data.parent) + '">..</button>' : '') +
-    (rows || '<div class="browse-empty">Подпапок нет</div>') +
-    '</div>';
+  body.innerHTML =
+    '<div class="browse-bar">' +
+      '<input class="browse-input" value="' + esc(data.path) + '" spellcheck="false" autocomplete="off">' +
+      '<button type="button" class="browse-more" data-action="browse-more" title="Список папок">…</button>' +
+    '</div>' +
+    '<div class="browse-menu" hidden>' +
+      (data.parent ? '<button class="dir-row up" data-action="dir-open" data-path="' + esc(data.parent) + '">..</button>' : '') +
+      (menuRows || '<div class="browse-empty">Подпапок нет</div>') +
+    '</div>' +
+    '<div class="browse-hint">' + (data.writable ? 'Можно писать в эту папку' : 'Только чтение') + '</div>';
+
+  const input = body.querySelector('.browse-input');
+  body.querySelector('[data-action="browse-more"]').onclick = () => {
+    const menu = body.querySelector('.browse-menu');
+    menu.hidden = !menu.hidden;
+  };
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const value = input.value.trim();
+      if (value) pickFolder(value);
+    }
+  };
+  setTimeout(() => { input.focus(); input.select(); }, 40);
 
   modal({
     title: 'Папка закладок',
@@ -1204,12 +1231,12 @@ async function pickFolder(path) {
     wide: true,
     actions: [
       { label: 'Отмена', onClick: (close) => close() },
-      { label: data.writable ? 'Выбрать эту папку' : 'Недоступна для записи', kind: 'primary', onClick: async (close) => {
-          if (!data.writable) { toast('Папка недоступна для записи'); return; }
+      { label: 'Выбрать эту папку', kind: 'primary', onClick: async (close) => {
+          const value = input.value.trim() || data.path;
           try {
             const r = await fetch(api('api/config'), {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ dataDir: data.path }),
+              body: JSON.stringify({ dataDir: value }),
             });
             const j = await r.json();
             if (!r.ok) { toast((j.error || 'Ошибка') + (j.hint ? '. ' + j.hint : '')); return; }
@@ -1252,35 +1279,6 @@ function createWorkspace() {
   });
 }
 
-function importFolder() {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.multiple = true;
-  inp.webkitdirectory = true;
-  inp.onchange = async () => {
-    const files = Array.from(inp.files || []).filter((f) => /\.json$/i.test(f.name));
-    if (!files.length) { toast('В папке нет .json'); return; }
-    const payload = [];
-    for (const f of files) {
-      if (f.size > 2 * 1024 * 1024) continue;
-      payload.push({ name: f.webkitRelativePath || f.name, content: await f.text() });
-    }
-    if (!payload.length) { toast('Нечего импортировать'); return; }
-    try {
-      const r = await fetch(api('api/import'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ files: payload }),
-      });
-      const j = await r.json();
-      if (!r.ok) { toast(j.error || 'Ошибка импорта'); return; }
-      state.manifest = j.manifest;
-      render();
-      toast(j.added.length ? 'Импортировано: ' + j.added.length : 'Подходящих воркспейсов не нашлось');
-    } catch (e) { toast('Сервер недоступен'); }
-  };
-  inp.click();
-}
-
 async function scanWorkspaces() {
   let data;
   try {
@@ -1289,8 +1287,12 @@ async function scanWorkspaces() {
     data = await r.json();
   } catch (e) { toast('Не удалось прочитать data/'); return; }
 
+  if (data.manifest && Array.isArray(data.manifest.workspaces)) {
+    state.manifest = data.manifest;
+    render();
+  }
   const items = data.items || [];
-  if (!items.length) { toast('В data/ нет js-файлов со START_PAGE'); return; }
+  if (!items.length) { toast('В папке нет JSON-воркспейсов'); return; }
 
   const form = document.createElement('div');
   form.className = 'scan';
@@ -1398,7 +1400,6 @@ document.addEventListener('click', (e) => {
     case 'pick-folder': closeOverlay(); pickFolder(state.dataDir || ''); break;
     case 'dir-open': closeOverlay(); pickFolder(t.dataset.path); break;
     case 'create-ws': closeOverlay(); createWorkspace(); break;
-    case 'import-folder': closeOverlay(); importFolder(); break;
     case 'set-theme': setTheme(t.dataset.id); break;
     case 'save': save(); break;
     case 'cancel': toggleEdit(); break;

@@ -155,6 +155,19 @@
   .mod-sections:empty{display:none}
   @media (max-width:640px){ .form .row2{grid-template-columns:1fr} }
 
+  .settings-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .settings-row .hint{color:var(--dim);font-size:12px;line-height:1.4}
+  .scan{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto}
+  .scan-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel-2);cursor:pointer}
+  .scan-row.done{opacity:.62;cursor:default}
+  .scan-row input{width:auto;flex:0 0 auto}
+  .scan-main{display:flex;flex-direction:column;min-width:0;flex:1}
+  .scan-title{font-size:13.5px;font-weight:600}
+  .scan-file{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .scan-badge{font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);
+    border:1px solid var(--line);border-radius:99px;padding:2px 7px;white-space:nowrap}
+  .scan-badge.new{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
   .settings h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:18px 0 8px}
   .settings h3:first-child{margin-top:0}
   .themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
@@ -377,7 +390,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.0.3',
+  version: '0.0.4',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -1106,11 +1119,62 @@ function openSettings() {
       '<span class="sw">' + (t.sw || ['#2b2b2b', '#5b9dff']).map((c) => '<i style="background:' + c + '"></i>').join('') + '</span>' +
       esc(t.title) + '</button>').join('') + '</div>' +
     '<h3>Анимации</h3><label class="check"><input type="checkbox" id="motion-cb"' + (state.motion ? ' checked' : '') + '> Переливы фона и переходы</label>' +
+    '<h3>Воркспейсы</h3><div class="settings-row"><button data-action="scan-ws">Сканировать data/</button>' +
+      '<span class="hint">Найдёт файлы с <code>window.START_PAGE</code> и добавит их в манифест.</span></div>' +
     '<h3>Букмарклет</h3><p style="font-size:13px">Перетащите ссылку на панель закладок — добавлять текущую страницу в Сходню в один клик.</p>' +
     '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ в Сходню</a>';
   modal({ title: 'Настройки', body: wrap, wide: true, actions: [{ label: 'Закрыть', onClick: (close) => close() }] });
   const cb = wrap.querySelector('#motion-cb');
   cb.onchange = () => { state.motion = cb.checked; store.set('motion', state.motion); document.documentElement.classList.toggle('no-motion', !state.motion); };
+}
+
+async function scanWorkspaces() {
+  let data;
+  try {
+    const r = await fetch(api('api/scan'), { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    data = await r.json();
+  } catch (e) { toast('Не удалось прочитать data/'); return; }
+
+  const items = data.items || [];
+  if (!items.length) { toast('В data/ нет js-файлов со START_PAGE'); return; }
+
+  const form = document.createElement('div');
+  form.className = 'scan';
+  form.innerHTML = items.map((it) => {
+    const done = it.inManifest;
+    return '<label class="scan-row' + (done ? ' done' : '') + '">' +
+      '<input type="checkbox" value="' + esc(it.file) + '"' + (done ? ' checked disabled' : ' checked') + '>' +
+      '<span class="scan-main"><span class="scan-title">' + esc(it.title) + '</span>' +
+      '<span class="scan-file">' + esc(it.file) + '</span></span>' +
+      (done ? '<span class="scan-badge">в манифесте</span>' : '<span class="scan-badge new">новая</span>') +
+      '</label>';
+  }).join('');
+
+  modal({
+    title: 'Сканирование data/',
+    body: form,
+    wide: true,
+    actions: [
+      { label: 'Отмена', onClick: (close) => close() },
+      { label: 'Добавить выбранные', kind: 'primary', onClick: async (close) => {
+          const files = Array.from(form.querySelectorAll('input:not([disabled])')).filter((i) => i.checked).map((i) => i.value);
+          if (!files.length) { toast('Нечего добавлять'); return; }
+          try {
+            const r = await fetch(api('api/manifest/add'), {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ files }),
+            });
+            const j = await r.json();
+            if (!r.ok) { toast(j.error || 'Ошибка'); return; }
+            state.manifest = j.manifest;
+            close();
+            render();
+            toast('Добавлено: ' + j.added.length);
+          } catch (e) { toast('Сервер недоступен'); }
+        } },
+    ],
+  });
 }
 
 function bookmarkletHref() {
@@ -1177,6 +1241,7 @@ document.addEventListener('click', (e) => {
     }
     case 'group-open': openGroupOverlay(gi); break;
     case 'tile-open': { const wr = t.closest('.cardwrap'); if (wr) openItemDetails(+wr.dataset.gi, +wr.dataset.ii); break; }
+    case 'scan-ws': closeOverlay(); scanWorkspaces(); break;
     case 'set-theme': setTheme(t.dataset.id); break;
     case 'save': save(); break;
     case 'cancel': toggleEdit(); break;

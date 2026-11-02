@@ -82,6 +82,50 @@ def write_manifest(obj: dict) -> None:
     )
 
 
+
+
+SKIP_WS_NAMES = {"manifest.js"}
+
+
+def _workspace_files():
+    data = ROOT / "data"
+    if not data.is_dir():
+        return []
+    out = []
+    for path in sorted(data.rglob("*.js")):
+        name = path.name
+        if name in SKIP_WS_NAMES or name.endswith(".personal.js") or name.endswith(".bak"):
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        if not rel.startswith("data/"):
+            continue
+        out.append((rel, path))
+    return out
+
+
+def _slug(value: str) -> str:
+    value = re.sub(r"[^a-zA-Z0-9_-]+", "-", value or "").strip("-").lower()
+    return value or "workspace"
+
+
+def scan_workspaces():
+    manifest = read_manifest() or {}
+    workspaces = manifest.get("workspaces")
+    if not isinstance(workspaces, list):
+        workspaces = []
+    known = {str(w.get("file")) for w in workspaces if isinstance(w, dict)}
+    items = []
+    for rel, path in _workspace_files():
+        page = read_js_object(path, "START_PAGE") or {}
+        items.append({
+            "file": rel,
+            "id": str(page.get("id") or path.stem),
+            "title": str(page.get("title") or path.stem),
+            "inManifest": rel in known,
+        })
+    return items, manifest
+
+
 def atomic_write(path: Path, content: str) -> None:
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(content, encoding="utf-8")
@@ -186,6 +230,9 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/config":
             return self.json({"mode": "http", "canWrite": True, "canCreate": True, "modules": modules_meta})
+        if path == "/api/scan":
+            items, manifest = scan_workspaces()
+            return self.json({"items": items, "manifest": manifest or {}})
         if path == "/api/modules":
             return self.json(modules_meta)
         if path.startswith("/api/modules/"):
@@ -205,6 +252,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.api_save(payload)
         if path == "/api/copy":
             return self.api_copy(payload)
+        if path == "/api/manifest/add":
+            return self.api_manifest_add(payload)
         if path.startswith("/api/modules/"):
             return self.module_call("POST", path, payload)
         self.json({"error": "not found"}, 404)
@@ -269,6 +318,46 @@ class Handler(SimpleHTTPRequestHandler):
             ent["ts"] = now
         atomic_write(ROOT / file, content)
         return self.json({"ok": True})
+
+    # ---------- манифест: добавить найденные воркспейсы ----------
+    def api_manifest_add(self, p: dict):
+        files = p.get("files") or []
+        if not isinstance(files, list) or not files:
+            return self.json({"error": "bad request"}, 400)
+        manifest = read_manifest()
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("workspaces"), list):
+            return self.json({"error": "манифест не читается — проверьте data/manifest.js"}, 400)
+
+        known = {str(w.get("file")) for w in manifest["workspaces"] if isinstance(w, dict)}
+        ids = {str(w.get("id")) for w in manifest["workspaces"] if isinstance(w, dict)}
+        added = []
+        for raw in files[:50]:
+            if not isinstance(raw, str):
+                continue
+            if not raw.startswith("data/") or not raw.endswith(".js") or ".." in raw:
+                continue
+            path = ROOT / raw
+            if not path.is_file() or path.name == "manifest.js" or path.name.endswith(".personal.js"):
+                continue
+            if raw in known:
+                continue
+            page = read_js_object(path, "START_PAGE") or {}
+            title = str(page.get("title") or path.stem)
+            base = _slug(str(page.get("id") or path.stem))
+            ws_id = base
+            n = 2
+            while ws_id in ids:
+                ws_id = f"{base}-{n}"
+                n += 1
+            entry = {"id": ws_id, "title": title, "file": raw}
+            manifest["workspaces"].append(entry)
+            known.add(raw)
+            ids.add(ws_id)
+            added.append(entry)
+
+        if added:
+            write_manifest(manifest)
+        return self.json({"ok": True, "added": added, "manifest": manifest})
 
     # ---------- копия воркспейса ----------
     def api_copy(self, p: dict):

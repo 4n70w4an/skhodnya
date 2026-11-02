@@ -3,8 +3,8 @@
 /* кружок на карточке */
 .hc-dot {
   position: absolute;
-  left: 7px;
-  bottom: 7px;
+  left: 6px;
+  top: 6px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -38,7 +38,7 @@
 .cardwrap.flip:hover .hc-pane { transform: none; }
 
 /* плитка группы */
-.gtile .hc-dot { left: auto; right: 10px; bottom: 10px; }
+.gtile .hc-dot { left: 10px; top: 10px; right: auto; bottom: auto; }
 .gtile .hc-pane { min-width: 262px; }
 .gtile:hover .hc-pane { opacity: 1; visibility: visible; transform: none; }
 .gtile.flip .hc-pane { left: auto; right: calc(100% + 10px); transform: translateX(4px); }
@@ -139,13 +139,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-left: auto;
   margin-right: 26px;
-  max-width: 62%;
+  max-width: 68%;
+  overflow: hidden;
   justify-content: flex-end;
 }
-.hc-inline .hc-item { margin-top: 0; padding: 3px 8px; font-size: 11px; border-radius: 8px; }
+.hc-inline .hc-item { margin-top: 0; padding: 3px 8px; font-size: 11px; border-radius: 8px; flex: 0 0 auto; }
 .hc-inline .hc-item + .hc-item { margin-top: 0; }
 .hc-inline .hc-kind { font-size: 9px; }
 .hc-inline .hc-target { max-width: 150px; }

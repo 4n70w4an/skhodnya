@@ -46,7 +46,18 @@
     transition:border-color .15s ease, box-shadow .15s ease}
   select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
   select option{background:var(--panel);color:var(--text)}
-  .ws{max-width:150px}
+  .ws-picker{position:relative}
+  .ws-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:110px;max-width:180px;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 10px;color:var(--text)}
+  .ws-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ws-caret{font-size:10px;color:var(--dim)}
+  .ws-menu{position:absolute;left:0;top:calc(100% + 6px);z-index:60;min-width:100%;max-height:60vh;overflow:auto;
+    display:flex;flex-direction:column;gap:2px;padding:5px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;box-shadow:var(--shadow)}
+  .ws-item{text-align:left;background:transparent;border:0;padding:8px 10px;border-radius:7px;color:var(--text);
+    white-space:nowrap;font-size:13.5px}
+  .ws-item:hover{background:var(--panel-2)}
+  .ws-item.active{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
   .search{position:relative;flex:1;min-width:140px}
   .search input{width:100%;padding-left:36px;padding-right:44px}
   .search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none}
@@ -138,6 +149,14 @@
   .gtile .gi .fav{width:22px;height:22px;flex-basis:22px;font-size:10px}
   .gtile .gt{font-weight:600}
   .gtile .gc{font-size:11px;color:var(--dim);margin-top:auto}
+  .gtile-more{position:absolute;right:10px;bottom:10px;width:30px;height:30px;border-radius:9px;
+    display:grid;place-items:center;color:var(--dim);background:color-mix(in srgb,var(--panel-2) 65%,transparent);
+    border:1px solid var(--line);backdrop-filter:blur(4px);font-size:14px;line-height:1}
+  .gp-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+  .gp-grid .cardwrap{width:132px}
+  .gp-grid .card{width:100%}
+  .gp-head .count{font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line);
+    border-radius:99px;padding:1px 7px}
 
   .overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
@@ -242,7 +261,10 @@
   .theme-btn.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .sw{display:flex;gap:3px;flex:0 0 auto}
   .sw i{width:12px;height:12px;border-radius:4px;display:block;border:1px solid rgba(255,255,255,.16)}
-  .bookmarklet{display:inline-block;padding:8px 12px;border-radius:9px;background:var(--accent);color:#fff;text-decoration:none;font-size:13px}
+  .bookmarklet{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:9px;
+    background:var(--panel);border:1px solid var(--line);color:var(--text);text-decoration:none;font-size:13px;font-weight:500}
+  .bookmarklet:hover{background:var(--panel-2);border-color:color-mix(in srgb,var(--line) 55%,var(--accent) 45%)}
+  .bm-hint{font-size:13.5px;color:var(--text);margin:0 0 10px}
 
   .toasts{position:fixed;right:14px;bottom:14px;z-index:90;display:flex;flex-direction:column;gap:8px;max-width:min(420px,90vw)}
   .toast{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--panel-2);
@@ -308,7 +330,12 @@
     </div>
   </div>
   <div class="mid">
-    <select id="ws" class="ws" title="Воркспейс"></select>
+    <div class="ws-picker" id="ws-picker">
+      <button type="button" class="ws-btn" id="ws-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="ws-label" id="ws-label">—</span><span class="ws-caret">▾</span>
+      </button>
+      <div class="ws-menu" id="ws-menu" role="listbox" hidden></div>
+    </div>
     <div class="search">
       <span class="ico">⌕</span>
       <input id="q" type="search" placeholder="Поиск: название, адрес, заметка, группа…" autocomplete="off" spellcheck="false">
@@ -459,7 +486,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.1.2',
+  version: '0.1.3',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -775,9 +802,12 @@ function renderTop() {
   const p = state.page;
   $('#app-title').textContent = state.manifest.title || 'Сходня';
   $('#app-sub').textContent = (p && (p.subtitle || p.title)) || state.manifest.subtitle || '';
-  const ws = $('#ws');
-  ws.innerHTML = state.manifest.workspaces.map((w) =>
-    '<option value="' + esc(w.id) + '"' + (w.id === state.wsId ? ' selected' : '') + '>' + esc(w.title) + '</option>'
+  const current = state.manifest.workspaces.find((w) => w.id === state.wsId);
+  $('#ws-label').textContent = current ? current.title : ((p && p.title) || '—');
+  const menu = $('#ws-menu');
+  menu.innerHTML = state.manifest.workspaces.map((w) =>
+    '<button type="button" class="ws-item' + (w.id === state.wsId ? ' active' : '') + '" data-action="switch-ws" data-id="' + esc(w.id) + '">' +
+    esc(w.title) + '</button>'
   ).join('');
   $$('#views button').forEach((b) => b.classList.toggle('active', b.dataset.view === state.view));
   const eb = $('#edit-btn');
@@ -896,7 +926,7 @@ function renderGroupsView(main) {
   const wrap = document.createElement('div');
   wrap.className = 'groups-grid';
   state.page.groups.forEach((g, gi) => {
-    const icons = g.items.slice(0, 4).map((it) =>
+    const icons = g.items.slice(0, 9).map((it) =>
       '<span class="fav" style="--h:' + hue(it.title) + '">' + esc((it.title || '?').charAt(0).toUpperCase()) + '</span>'
     ).join('');
     const search = esc(norm(g.title) + ' ' + tr(g.title + ' ' + g.items.map((i) => i.title).join(' ')));
@@ -905,7 +935,9 @@ function renderGroupsView(main) {
     btn.dataset.action = 'group-open';
     btn.dataset.gi = gi;
     btn.dataset.search = search;
-    btn.innerHTML = '<div class="gi">' + icons + '</div><div class="gt">' + esc(g.title) + '</div><div class="gc">' + g.items.length + ' эл.</div>';
+    btn.innerHTML = '<div class="gi">' + icons + '</div><div class="gt">' + esc(g.title) + '</div>' +
+      '<div class="gc">' + g.items.length + ' эл.</div>' +
+      (g.items.length > 9 ? '<span class="gtile-more">…</span>' : '');
     wrap.appendChild(btn);
   });
   main.appendChild(wrap);
@@ -1023,6 +1055,15 @@ function toast(msg, actionLabel, action) {
   }
   box.appendChild(el);
   setTimeout(() => el.remove(), 6000);
+}
+
+async function switchWorkspace(id) {
+  if (!id || id === state.wsId) return;
+  if (state.dirty && !confirm('Несохранённые изменения будут потеряны. Продолжить?')) return;
+  const w = state.manifest.workspaces.find((x) => x.id === id);
+  if (!w) return;
+  await openWorkspace(w);
+  render();
 }
 
 function toggleEdit() {
@@ -1212,8 +1253,9 @@ function openSettings() {
     '<div class="settings-row"><button data-action="create-ws">Создать воркспейс</button>' +
       '<button data-action="scan-ws">Сканировать папку</button></div>' +
     '<p class="hint">Скан смотрит папку закладок на сервере. Если манифеста нет, он создастся сам по найденным воркспейсам.</p>' +
-    '<h3>Букмарклет</h3><p style="font-size:13px">Перетащите ссылку на панель закладок — добавлять текущую страницу в Сходню в один клик.</p>' +
-    '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ в Сходню</a>';
+    '<h3>Добавить в Сходню</h3>' +
+    '<p class="bm-hint">Перетащите кнопку на панель закладок — текущая вкладка добавится в Сходню в один клик.</p>' +
+    '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ Добавить в Сходню</a>';
   modal({ title: 'Настройки', body: wrap, wide: true, actions: [{ label: 'Закрыть', onClick: (close) => close() }] });
   const cb = wrap.querySelector('#motion-cb');
   cb.onchange = () => { state.motion = cb.checked; store.set('motion', state.motion); document.documentElement.classList.toggle('no-motion', !state.motion); };
@@ -1456,9 +1498,8 @@ function openHelp() {
     body: '<ul class="help-list">' +
       '<li><code>/</code> — поиск, <code>Esc</code> — сброс, <code>Enter</code> — открыть первое совпадение, <code>1…9</code> — открыть N-е.</li>' +
       '<li><b>✎</b> — режим правки: добавляйте группы и элементы, перетаскивайте карточки, меняйте порядок групп.</li>' +
-      '<li><b>⚙</b> — темы, анимации, сервер, букмарклет.</li>' +
-      '<li>Данные лежат в <code>data/&lt;воркспейс&gt;.json</code>. Сохранение пишет файл на диск через сервер.</li>' +
-      '</ul><p><a href="readme.html" target="_blank">Полная документация</a></p>',
+      '<li><b>⚙</b> — темы, анимации, папка закладок, букмарклет.</li>' +
+      '</ul><p>Подробности — в <a href="readme.html" target="_blank">документации</a>.</p>',
     actions: [{ label: 'Понятно', onClick: (close) => close() }],
   });
 }
@@ -1518,6 +1559,7 @@ document.addEventListener('click', (e) => {
     case 'scan-ws': closeOverlay(); scanWorkspaces(); break;
     case 'pick-folder': closeOverlay(); openFolderPicker(state.dataDir || ''); break;
     case 'create-ws': closeOverlay(); createWorkspace(); break;
+    case 'switch-ws': $('#ws-menu').hidden = true; switchWorkspace(t.dataset.id); break;
     case 'set-theme': setTheme(t.dataset.id); break;
     case 'save': save(); break;
     case 'cancel': toggleEdit(); break;
@@ -1757,15 +1799,14 @@ async function boot() {
   $('#edit-btn').addEventListener('click', toggleEdit);
   $('#settings-btn').addEventListener('click', openSettings);
   $('#help-btn').addEventListener('click', openHelp);
-  $('#ws').addEventListener('change', async (e) => {
-    const id = e.target.value;
-    if (state.dirty && !confirm('Несохранённые изменения будут потеряны. Продолжить?')) {
-      e.target.value = state.wsId || '';
-      return;
-    }
-    const w = state.manifest.workspaces.find((x) => x.id === id);
-    await openWorkspace(w);
-    render();
+  $('#ws-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const menu = $('#ws-menu');
+    menu.hidden = !menu.hidden;
+    $('#ws-btn').setAttribute('aria-expanded', String(!menu.hidden));
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('#ws-picker')) $('#ws-menu').hidden = true;
   });
   $$('#views button').forEach((b) => b.addEventListener('click', () => {
     state.view = b.dataset.view; store.set('view', state.view); render();

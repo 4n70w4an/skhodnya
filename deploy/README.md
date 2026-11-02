@@ -38,6 +38,16 @@ systemctl --user enable --now skhodnya
 loginctl enable-linger "$USER"   # автозапуск без входа в систему
 ```
 
+## Папка закладок
+
+Путь хранится в `/opt/skhodnya/config.json` и меняется в настройках приложения.
+Если выбираете папку вне `/opt/skhodnya/data`, добавьте её в `ReadWritePaths`
+юнита и перезапустите сервис:
+
+```ini
+ReadWritePaths=/opt/skhodnya/data /opt/skhodnya/config.json /srv/bookmarks
+```
+
 ## Обновление
 
 ```bash

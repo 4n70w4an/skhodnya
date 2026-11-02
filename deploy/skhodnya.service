@@ -25,7 +25,7 @@ NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
-ReadWritePaths=/opt/skhodnya/data
+ReadWritePaths=/opt/skhodnya/data /opt/skhodnya/config.json
 
 [Install]
 WantedBy=multi-user.target

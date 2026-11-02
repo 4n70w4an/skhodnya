@@ -25,7 +25,7 @@ fi
 mkdir -p "$DEST/data"
 # код и ресурсы обновляем, данные не трогаем
 rsync -a --exclude '.git' --exclude '__pycache__' --exclude 'data/' \
-      --exclude '*.personal.js' --exclude '*.bak' "$SRC/" "$DEST/"
+      --exclude 'config.json' --exclude '*.bak' "$SRC/" "$DEST/"
 # данные копируем только при первой установке
 if [ ! -f "$DEST/data/manifest.js" ]; then
   cp -a "$SRC/data/." "$DEST/data/"

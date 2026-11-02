@@ -16,3 +16,6 @@ data/*.personal.js
 
 # личные данные в JSON
 data/*.personal.json
+
+# локальная конфигурация (путь к папке закладок)
+config.json

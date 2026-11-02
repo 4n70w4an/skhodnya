@@ -142,13 +142,20 @@
   .favorites .section-head h2{color:var(--accent)}
   .empty{text-align:center;color:var(--dim);padding:70px 0;font-size:15px}
   .groups-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-  .gtile{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:16px 14px;background:var(--panel);
-    border:1px solid var(--line);border-radius:var(--radius);text-align:left;min-height:110px}
+  .gtile{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--radius);min-height:110px;cursor:pointer}
   .gtile:hover{border-color:var(--accent)}
-  .gtile .gi{display:grid;grid-template-columns:repeat(3, auto);gap:6px;justify-content:center;width:100%;padding:0 4px}
-  .gtile .gi .fav{width:34px;height:34px;flex-basis:34px;font-size:14px;border-radius:9px}
-  .gtile .gt{font-weight:600}
-  .gtile .gc{font-size:11px;color:var(--dim);margin-top:auto;text-align:center}
+  .gtile-head{display:flex;align-items:center;gap:8px;padding-left:16px}
+  .gtile-title{font-weight:600;font-size:14.5px}
+  .gtile-head .count{font-size:11px;color:var(--dim);background:var(--panel-2);border:1px solid var(--line);
+    border-radius:99px;padding:1px 7px}
+  .gtile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;width:100%}
+  .gt-mini .card{padding:8px;gap:8px;align-items:center;background:var(--panel-2)}
+  .gt-mini .fav{width:28px;height:28px;flex-basis:28px;font-size:12px}
+  .gt-mini .title{font-size:12.5px}
+  .gt-mini .note{font-size:10.5px;margin-top:1px;line-height:1.25}
+  .gt-mini .url,.gt-mini .tags{display:none}
+  .gtile .gc{font-size:11px;color:var(--dim);margin-top:auto}
   .gtile-more{position:absolute;right:10px;bottom:10px;width:30px;height:30px;border-radius:9px;
     display:grid;place-items:center;color:var(--dim);background:color-mix(in srgb,var(--panel-2) 65%,transparent);
     border:1px solid var(--line);backdrop-filter:blur(4px);font-size:14px;line-height:1}
@@ -486,7 +493,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.1.4',
+  version: '0.1.5',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -926,19 +933,30 @@ function renderGroupsView(main) {
   const wrap = document.createElement('div');
   wrap.className = 'groups-grid';
   state.page.groups.forEach((g, gi) => {
-    const icons = g.items.slice(0, 9).map((it) =>
-      '<span class="fav" style="--h:' + hue(it.title) + '">' + esc((it.title || '?').charAt(0).toUpperCase()) + '</span>'
-    ).join('');
+    const preview = g.items.slice(0, 9).map((it) =>
+      '<div class="cardwrap gt-mini" data-id="' + esc(it.id) + '">' +
+        '<div class="card">' +
+          '<span class="fav" style="--h:' + hue(it.title) + '">' + esc((it.title || '?').charAt(0).toUpperCase()) + '</span>' +
+          '<span class="meta"><span class="title">' + esc(it.title) + '</span>' +
+            (it.note ? '<span class="note">' + esc(it.note) + '</span>' : '') +
+          '</span>' +
+        '</div>' +
+      '</div>').join('');
     const search = esc(norm(g.title) + ' ' + tr(g.title + ' ' + g.items.map((i) => i.title).join(' ')));
-    const btn = document.createElement('button');
-    btn.className = 'gtile';
-    btn.dataset.action = 'group-open';
-    btn.dataset.gi = gi;
-    btn.dataset.search = search;
-    btn.innerHTML = '<div class="gi">' + icons + '</div><div class="gt">' + esc(g.title) + '</div>' +
+    const tile = document.createElement('div');
+    tile.className = 'gtile';
+    tile.dataset.action = 'group-open';
+    tile.dataset.gi = gi;
+    tile.dataset.search = search;
+    tile.setAttribute('role', 'button');
+    tile.tabIndex = 0;
+    tile.innerHTML =
+      '<div class="gtile-head"><span class="gtile-title">' + esc(g.title) + '</span>' +
+        '<span class="count">' + g.items.length + '</span></div>' +
+      '<div class="gtile-grid">' + preview + '</div>' +
       '<div class="gc">' + g.items.length + ' эл.</div>' +
       (g.items.length > 9 ? '<span class="gtile-more">…</span>' : '');
-    wrap.appendChild(btn);
+    wrap.appendChild(tile);
   });
   main.appendChild(wrap);
 }

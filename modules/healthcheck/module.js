@@ -166,7 +166,9 @@
     if (r.right + 280 > window.innerWidth) host.classList.add('flip');
   });
 
-  function editorSection(item) {
+  function editorSection(item, ctx) {
+    const getUrl = () => (ctx && ctx.getUrl ? ctx.getUrl() : item.url);
+    const current = () => ({ url: getUrl() });
     const wrap = document.createElement('div');
     wrap.className = 'hc-editor';
     wrap.innerHTML =
@@ -179,7 +181,7 @@
     function sync(row) {
       const type = row.querySelector('.hc-type').value;
       row.classList.toggle('no-port', type !== 'tcp');
-      const host = hostOf(item);
+      const host = hostOf(current());
       row.querySelector('.hc-target').textContent = type === 'tcp'
         ? host + ':' + (row.querySelector('.hc-port').value || '?')
         : host;
@@ -194,7 +196,7 @@
         '<option value="ping">ping</option><option value="tcp">tcp</option></select>' +
         '<span class="hc-target"></span>' +
         '<input class="hc-port" type="number" min="1" max="65535" placeholder="порт" value="' +
-          (c.port || (isTcp ? portOfUrl(item) : '')) + '">' +
+          (c.port || (isTcp ? portOfUrl(current()) : '')) + '">' +
         '<span class="hc-intwrap"><input class="hc-int" type="number" min="1" max="3600" value="' +
           (c.interval || 5) + '" title="Интервал, секунд"><span class="hc-suffix">с</span></span>' +
         '<button type="button" class="hc-del" title="Удалить проверку">✕</button>';
@@ -216,13 +218,16 @@
 
     return {
       el: wrap,
+      refresh() {
+        Array.from(rows.querySelectorAll('.hc-row')).forEach((row) => sync(row));
+      },
       get() {
         return Array.from(rows.querySelectorAll('.hc-row')).map((row) => {
           const type = row.querySelector('.hc-type').value;
           const out = { type, interval: Math.max(1, Math.min(3600, Number(row.querySelector('.hc-int').value) || 5)) };
           if (type === 'tcp') out.port = Number(row.querySelector('.hc-port').value) || 0;
           return out;
-        }).filter((c) => c.type === 'http' || c.type === 'https' || (c.type === 'tcp' && c.port));
+        }).filter((c) => c.type === 'http' || c.type === 'https' || c.type === 'ping' || (c.type === 'tcp' && c.port));
       },
     };
   }

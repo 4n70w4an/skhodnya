@@ -429,7 +429,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.0.9',
+  version: '0.1.0',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -441,11 +441,11 @@ window.Svod = {
     try { mod.onBoot && mod.onBoot(); } catch (e) { console.error(e); }
     if (state.page) render();
   },
-  editorSections(item) {
+  editorSections(item, ctx) {
     const out = [];
     for (const m of state.modules) {
       if (!m.editorSection) continue;
-      try { const s = m.editorSection(item); if (s && s.el) out.push(s); } catch (e) { console.error(e); }
+      try { const s = m.editorSection(item, ctx); if (s && s.el) out.push(s); } catch (e) { console.error(e); }
     }
     return out;
   },
@@ -1024,9 +1024,11 @@ function openItemEditor(gi, ii, preset) {
       '<div class="field"><span>Избранное</span><label class="checkline"><input type="checkbox" name="fav"' + (item.fav ? ' checked' : '') + '> Показывать сверху</label></div>' +
     '</div>' +
     '<div class="mod-sections"></div>';
-  const sections = window.Svod.editorSections(item);
+  const urlInput = form.querySelector('input[name=url]');
+  const sections = window.Svod.editorSections(item, { getUrl: () => urlInput.value.trim() });
   const host = form.querySelector('.mod-sections');
   sections.forEach((s) => host.appendChild(s.el));
+  urlInput.addEventListener('input', () => sections.forEach((s) => { if (s && s.refresh) s.refresh(); }));
 
   modal({
     title: isNew ? 'Новый элемент' : 'Изменить элемент',

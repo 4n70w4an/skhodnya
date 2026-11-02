@@ -47,9 +47,9 @@ def register(api):
     id: "mymodule",
     onBoot() {},                          // при подключении
     onRender({ root, page, edit }) {},     // после каждой перерисовки
-    editorSection(item) {                  // секция в редакторе элемента
+    editorSection(item, ctx) {             // секция в редакторе; ctx.getUrl() — текущий URL
       const el = document.createElement("div");
-      return { el, get() { return item.checks; } };
+      return { el, get() { return item.checks; }, refresh() {} };
     },
   });
 })();

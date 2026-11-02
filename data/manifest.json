@@ -1,0 +1,17 @@
+{
+  "title": "Сходня",
+  "subtitle": "домашняя лаборатория",
+  "defaultWorkspace": "home",
+  "workspaces": [
+    {
+      "id": "home",
+      "title": "Дом",
+      "file": "data/home.json"
+    },
+    {
+      "id": "work",
+      "title": "Работа",
+      "file": "data/work.json"
+    }
+  ]
+}

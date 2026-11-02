@@ -47,7 +47,7 @@ def rel_data(path: str) -> str | None:
     """Проверяет, что путь — файл внутри data/ с расширением .js."""
     if not path or path.startswith("/") or ".." in path:
         return None
-    if not path.startswith("data/") or not path.endswith(".js"):
+    if not path.startswith("data/") or not (path.endswith(".json") or path.endswith(".js")):
         return None
     return path
 
@@ -70,21 +70,38 @@ def read_js_object(path: Path, name: str):
         return None
 
 
+def read_json(path: Path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def read_workspace(path: Path):
+    """Данные воркспейса: .json (основной формат) или .js (старый)."""
+    if path.suffix == ".json":
+        return read_json(path)
+    return read_js_object(path, "START_PAGE")
+
+
 def read_manifest():
+    obj = read_json(ROOT / "data" / "manifest.json")
+    if obj is not None:
+        return obj
+    # старый формат — читаем, но сохраняем уже в JSON
     return read_js_object(ROOT / "data" / "manifest.js", "START_MANIFEST")
 
 
 def write_manifest(obj: dict) -> None:
-    (ROOT / "data" / "manifest.js").write_text(
-        "/* Сходня — манифест воркспейсов. */\n"
-        "window.START_MANIFEST = " + json.dumps(obj, ensure_ascii=False, indent=2) + ";\n",
+    (ROOT / "data" / "manifest.json").write_text(
+        json.dumps(obj, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
 
 
 
-SKIP_WS_NAMES = {"manifest.js"}
+SKIP_WS_NAMES = {"manifest.js", "manifest.json"}
 
 
 def _workspace_files():
@@ -92,9 +109,11 @@ def _workspace_files():
     if not data.is_dir():
         return []
     out = []
-    for path in sorted(data.rglob("*.js")):
+    for path in sorted(data.rglob("*")):
+        if not path.is_file() or path.suffix not in (".json", ".js"):
+            continue
         name = path.name
-        if name in SKIP_WS_NAMES or name.endswith(".personal.js") or name.endswith(".bak"):
+        if name in SKIP_WS_NAMES or ".personal." in name or name.endswith(".bak"):
             continue
         rel = path.relative_to(ROOT).as_posix()
         if not rel.startswith("data/"):
@@ -116,7 +135,7 @@ def scan_workspaces():
     known = {str(w.get("file")) for w in workspaces if isinstance(w, dict)}
     items = []
     for rel, path in _workspace_files():
-        page = read_js_object(path, "START_PAGE") or {}
+        page = read_workspace(path) or {}
         items.append({
             "file": rel,
             "id": str(page.get("id") or path.stem),
@@ -316,7 +335,14 @@ class Handler(SimpleHTTPRequestHandler):
             if not ent or ent["client"] != client or ent["token"] != token or now - ent["ts"] >= LOCK_TTL:
                 return self.json({"error": "not owner"}, 403)
             ent["ts"] = now
-        atomic_write(ROOT / file, content)
+        if file.endswith(".json"):
+            try:
+                json.loads(content)
+            except json.JSONDecodeError:
+                return self.json({"error": "invalid json"}, 400)
+            atomic_write(ROOT / file, content)
+        else:
+            atomic_write(ROOT / file, "window.START_PAGE = " + content.rstrip() + ";\n")
         return self.json({"ok": True})
 
     # ---------- манифест: добавить найденные воркспейсы ----------
@@ -334,14 +360,14 @@ class Handler(SimpleHTTPRequestHandler):
         for raw in files[:50]:
             if not isinstance(raw, str):
                 continue
-            if not raw.startswith("data/") or not raw.endswith(".js") or ".." in raw:
+            if not raw.startswith("data/") or not (raw.endswith(".json") or raw.endswith(".js")) or ".." in raw:
                 continue
             path = ROOT / raw
-            if not path.is_file() or path.name == "manifest.js" or path.name.endswith(".personal.js"):
+            if not path.is_file() or path.name in SKIP_WS_NAMES or ".personal." in path.name:
                 continue
             if raw in known:
                 continue
-            page = read_js_object(path, "START_PAGE") or {}
+            page = read_workspace(path) or {}
             title = str(page.get("title") or path.stem)
             base = _slug(str(page.get("id") or path.stem))
             ws_id = base
@@ -371,14 +397,14 @@ class Handler(SimpleHTTPRequestHandler):
         stem = src.stem
         n = 2
         while True:
-            target_rel = f"data/{stem} ({n}).js"
+            target_rel = f"data/{stem} ({n}).json"
             if not (ROOT / target_rel).exists():
                 break
             n += 1
         target = ROOT / target_rel
-        shutil.copy2(src, target)
+        page = read_workspace(src) or {}
+        target.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-        page = read_js_object(target, "START_PAGE") or {}
         title = str(page.get("title") or stem) + " (копия)"
         ws_id = stem + "-copy-" + secrets.token_hex(3)
         manifest = read_manifest()

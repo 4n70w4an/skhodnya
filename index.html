@@ -390,7 +390,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.0.4',
+  version: '0.0.5',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -438,6 +438,13 @@ function loadScript(src, timeout = 8000) {
     document.head.appendChild(s);
   });
 }
+async function fetchJson(url) {
+  const bust = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+  const r = await fetch(bust, { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status + ' для ' + url);
+  return r.json();
+}
+
 function addCss(href) {
   const l = document.createElement('link');
   l.rel = 'stylesheet'; l.href = href;
@@ -464,17 +471,29 @@ function setTheme(id) {
 
 /* ───────────────────────── загрузка данных ───────────────────────── */
 async function loadManifest() {
+  state.fallbackManifest = false;
+  try {
+    const data = await fetchJson('data/manifest.json');
+    if (data && Array.isArray(data.workspaces) && data.workspaces.length) {
+      state.manifest = data;
+      return;
+    }
+  } catch (e) {}
+  // старый формат: манифест как js-файл
   delete window.START_MANIFEST;
   try { await loadScript(withBust('data/manifest.js')); } catch (e) {}
   if (window.START_MANIFEST && window.START_MANIFEST.workspaces) {
     state.manifest = window.START_MANIFEST;
-    state.fallbackManifest = false;
   } else {
     state.manifest = DEFAULT_MANIFEST;
     state.fallbackManifest = true;
   }
 }
 async function loadThemes() {
+  try {
+    const data = await fetchJson('themes/manifest.json');
+    if (Array.isArray(data) && data.length) { state.themes = data; return; }
+  } catch (e) {}
   delete window.START_THEMES;
   try { await loadScript(withBust('themes/manifest.js')); } catch (e) {}
   state.themes = (window.START_THEMES && window.START_THEMES.length) ? window.START_THEMES : DEFAULT_THEMES;
@@ -515,20 +534,24 @@ async function openWorkspace(ws, directFile) {
     state.loadError = 'Не найден ни один воркспейс. Проверьте data/manifest.js.';
     return;
   }
-  const url = withBust(state.file);
   try {
-    await loadScript(url);
+    if (/\.json(\?|$)/.test(state.file)) {
+      state.page = await fetchJson(state.file);
+    } else {
+      delete window.START_PAGE;
+      await loadScript(withBust(state.file));
+      state.page = window.START_PAGE;
+    }
   } catch (e) {
     state.page = null;
-    state.loadError = 'Файл «' + state.file + '» не найден или пуст.';
+    state.loadError = 'Файл «' + state.file + '» не найден или не читается.';
     return;
   }
-  if (!window.START_PAGE) {
+  if (!state.page || !state.page.groups) {
     state.page = null;
-    state.loadError = 'Файл «' + state.file + '» не содержит объект START_PAGE.';
+    state.loadError = 'В файле «' + state.file + '» нет данных воркспейса.';
     return;
   }
-  state.page = window.START_PAGE;
   if (!Array.isArray(state.page.groups)) state.page.groups = [];
   state.collapsed = store.get('collapsed:' + (state.page.id || state.file), {});
   try { history.replaceState(null, '', '?ws=' + encodeURIComponent(state.wsId || '')); } catch (e) {}
@@ -1074,7 +1097,7 @@ function download(text, name) {
 
 async function save() {
   if (state.readOnly) { toast('Только чтение — сохранять нельзя'); return; }
-  const src = 'window.START_PAGE = ' + JSON.stringify(state.page, null, 2) + ';\n';
+  const src = JSON.stringify(state.page, null, 2) + '\n';
   try {
     const r = await fetch(api('api/save'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1120,7 +1143,7 @@ function openSettings() {
       esc(t.title) + '</button>').join('') + '</div>' +
     '<h3>Анимации</h3><label class="check"><input type="checkbox" id="motion-cb"' + (state.motion ? ' checked' : '') + '> Переливы фона и переходы</label>' +
     '<h3>Воркспейсы</h3><div class="settings-row"><button data-action="scan-ws">Сканировать data/</button>' +
-      '<span class="hint">Найдёт файлы с <code>window.START_PAGE</code> и добавит их в манифест.</span></div>' +
+      '<span class="hint">Найдёт <code>data/*.json</code> (и старые <code>*.js</code>) и добавит их в манифест.</span></div>' +
     '<h3>Букмарклет</h3><p style="font-size:13px">Перетащите ссылку на панель закладок — добавлять текущую страницу в Сходню в один клик.</p>' +
     '<a class="bookmarklet" href="' + esc(bookmarkletHref()) + '">＋ в Сходню</a>';
   modal({ title: 'Настройки', body: wrap, wide: true, actions: [{ label: 'Закрыть', onClick: (close) => close() }] });
@@ -1190,7 +1213,7 @@ function openHelp() {
       '<li><code>/</code> — поиск, <code>Esc</code> — сброс, <code>Enter</code> — открыть первое совпадение, <code>1…9</code> — открыть N-е.</li>' +
       '<li><b>✎</b> — режим правки: добавляйте группы и элементы, перетаскивайте карточки, меняйте порядок групп.</li>' +
       '<li><b>⚙</b> — темы, анимации, сервер, букмарклет.</li>' +
-      '<li>Данные лежат в <code>data/&lt;воркспейс&gt;.js</code>. Сохранение пишет файл на диск через сервер.</li>' +
+      '<li>Данные лежат в <code>data/&lt;воркспейс&gt;.json</code>. Сохранение пишет файл на диск через сервер.</li>' +
       '</ul><p><a href="readme.html" target="_blank">Полная документация</a></p>',
     actions: [{ label: 'Понятно', onClick: (close) => close() }],
   });
@@ -1247,7 +1270,7 @@ document.addEventListener('click', (e) => {
     case 'cancel': toggleEdit(); break;
     case 'import': importBookmarks(); break;
     case 'retry': location.reload(); break;
-    case 'dl-manifest': download('window.START_MANIFEST = ' + JSON.stringify(DEFAULT_MANIFEST, null, 2) + ';\n', 'manifest.js'); break;
+    case 'dl-manifest': download(JSON.stringify(DEFAULT_MANIFEST, null, 2) + '\n', 'manifest.json'); break;
     default: break;
   }
 });

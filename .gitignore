@@ -13,3 +13,6 @@ Thumbs.db
 
 # Личные данные (не публикуем)
 data/*.personal.js
+
+# личные данные в JSON
+data/*.personal.json

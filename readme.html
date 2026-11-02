@@ -70,7 +70,7 @@
   <a href="#keys">Горячие клавиши</a>
   <a href="#faq">Вопросы и проблемы</a>
   <a href="#limits">Ограничения</a>
-  <div class="ver">alpha 0.0.4</div>
+  <div class="ver">alpha 0.0.5</div>
 </nav>
 
 <main>
@@ -109,13 +109,13 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
   index.html          страница (разметка, стили, логика)
   readme.html         эта документация
   README.md           короткая памятка
-  server.py           локальный сервер (необязателен)
+  server.py           локальный сервер
   data/
-    manifest.js       список воркспейсов  ← файл закладок №1
-    home.js           воркспейс «Дом»     ← файл закладок №2
-    work.js           воркспейс «Работа»
+    manifest.json     список воркспейсов  ← файл закладок №1
+    home.json         воркспейс «Дом»     ← файл закладок №2
+    work.json         воркспейс «Работа»
   themes/
-    manifest.js       список тем
+    manifest.json     список тем
     dark_base.css     тёмная (по умолчанию)
     light_base.css    светлая
     cream.css         кремовая
@@ -127,8 +127,8 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
     graphite.css      «Графит», тёмная нейтральная
   modules/
     healthcheck/      проверки доступности (подключается автоматически)</code></pre>
-<p>Формат файла воркспейса — валидный JSON внутри присваивания:</p>
-<pre><code>window.START_PAGE = {
+<p>Формат файла воркспейса — обычный JSON:</p>
+<pre><code>{
   "id": "home",
   "title": "Дом",
   "subtitle": "всё под рукой",
@@ -138,9 +138,9 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
         "note": "основной", "tags": ["pve"], "fav": true, "checks": [] }
     ] }
   ]
-};</code></pre>
+}</code></pre>
 <p>Обязательные поля элемента — <code>title</code> и <code>url</code>. Остальное можно не указывать.</p>
-<div class="note">Сервер читает эти файлы как JSON (после <code>window.START_PAGE =</code>), поэтому комментарии внутри объекта не поддерживаются. Комментарий <em>до</em> <code>window.</code> — можно.</div>
+<div class="note">Комментарии в JSON нельзя — формат строгий. Старые файлы <code>*.js</code> с <code>window.START_PAGE</code> сервер ещё читает, но новый формат — <code>*.json</code>. Перевести старые: <code>python3 tools/migrate-to-json.py</code>.</div>
 
 <h2 id="workspaces">Воркспейсы</h2>
 <p>Воркспейс — отдельный набор групп и ссылок: «Дом», «Работа», «Лаборатория». Переключатель — в левом верхнем углу.</p>
@@ -149,13 +149,13 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
   <li><code>?ws=work</code> в адресе (можно сделать закладку на конкретный воркспейс);</li>
   <li><code>#/work</code> в адресе;</li>
   <li>последний открытый — запоминается в браузере;</li>
-  <li><code>defaultWorkspace</code> из <code>data/manifest.js</code>;</li>
+  <li><code>defaultWorkspace</code> из <code>data/manifest.json</code>;</li>
   <li>первый в списке.</li>
 </ol>
-<p>Новый воркспейс: скопируйте <code>data/home.js</code> в <code>data/lab.js</code>, поменяйте <code>id</code>/<code>title</code> и добавьте строку в манифест:</p>
-<pre><code>{ "id": "lab", "title": "Лаборатория", "file": "data/lab.js" }</code></pre>
+<p>Новый воркспейс: скопируйте <code>data/home.json</code> в <code>data/lab.json</code>, поменяйте <code>id</code>/<code>title</code> и добавьте строку в манифест:</p>
+<pre><code>{ "id": "lab", "title": "Лаборатория", "file": "data/lab.json" }</code></pre>
 <p>С сервером кнопка «Создать копию» в окне блокировки делает это автоматически.</p>
-<p>Если файлы уже лежат в <code>data/</code>, в настройках есть кнопка <b>«Сканировать data/»</b>: она находит все <code>*.js</code> с <code>window.START_PAGE</code>, показывает список и добавляет выбранные в манифест. Файлы <code>*.personal.js</code> пропускаются.</p>
+<p>Если файлы уже лежат в <code>data/</code>, в настройках есть кнопка <b>«Сканировать data/»</b>: она находит все <code>*.json</code> (и старые <code>*.js</code>), показывает список и добавляет выбранные в манифест. Файлы <code>*.personal.*</code> пропускаются.</p>
 
 <h2 id="edit">Редактирование</h2>
 <p>Кнопка <kbd>✎</kbd> включает режим правки. Без неё изменить ничего нельзя: клики только открывают ссылки.</p>
@@ -188,7 +188,7 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
   --ok:#3fb950; --warn:#d29922; --danger:#f85149;
   --shadow:0 10px 30px rgba(0,0,0,.3);
 }</code></pre>
-<p>Положите файл в <code>themes/</code> и добавьте строку в <code>themes/manifest.js</code>:</p>
+<p>Положите файл в <code>themes/</code> и добавьте строку в <code>themes/manifest.json</code>:</p>
 <pre><code>{ "id": "my_theme", "title": "Моя", "file": "themes/my_theme.css" }</code></pre>
 <p>Если тема не загрузилась — страница останется на тёмной, ничего не сломается.</p>
 
@@ -238,7 +238,7 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
 
 <h2 id="faq">Вопросы и проблемы</h2>
 <h3>«Манифест не найден»</h3>
-<p>Нет <code>data/manifest.js</code> — страница работает на встроенном списке. Нажмите «Скачать шаблон» и положите файл в <code>data/</code>.</p>
+<p>Нет <code>data/manifest.json</code> — страница работает на встроенном списке. Нажмите «Скачать шаблон» и положите файл в <code>data/</code>.</p>
 <h3>Файл воркспейса не найден</h3>
 <p>Проверьте путь в манифесте и наличие файла. В режиме сервера путь относительный от папки <code>start-page</code>.</p>
 <h3>Порт занят</h3>
@@ -248,7 +248,7 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
 <h3>Нужен сервер</h3>
 <p>Отключён до 1.0.0: без сервера нет записи и проверок. Запустите <code>python3 server.py</code>.</p>
 <h3>Тема не применилась</h3>
-<p>Проверьте путь в <code>themes/manifest.js</code>; при ошибке остаётся тёмная тема.</p>
+<p>Проверьте путь в <code>themes/manifest.json</code>; при ошибке остаётся тёмная тема.</p>
 <h3>Ping всегда «недоступно»</h3>
 <p>Проверьте, что <code>ping -c 1 адрес</code> работает в терминале от того же пользователя, который запускает сервер.</p>
 

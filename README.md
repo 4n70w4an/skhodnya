@@ -3,7 +3,7 @@
 Одна страница вместо полусотни вкладок: сервисы, таблицы, Proxmox — с поиском,
 группами и проверками доступности.
 
-**alpha 0.0.4**
+**alpha 0.0.5**
 
 ## Запуск
 
@@ -29,8 +29,8 @@ sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локал
 
 ```
 index.html      страница
-data/           файлы закладок (manifest.js + воркспейсы)
-themes/         7 тем + manifest.js
+data/           файлы закладок (manifest.json + воркспейсы)
+themes/         11 тем + manifest.json
 modules/        модули (healthcheck включён)
 server.py       локальный сервер
 deploy/         systemd-юнит и установщик

@@ -16,6 +16,15 @@ python3 server.py
 
 Работает только через сервер: без него страница показывает «Нужен сервер».
 
+## Установка как сервис
+
+```bash
+sudo ./deploy/install.sh                 # /opt/skhodnya, http://127.0.0.1:8080
+sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локальной сети
+```
+
+Подробно — [deploy/README.md](deploy/README.md).
+
 ## Что внутри
 
 ```
@@ -24,6 +33,7 @@ data/           файлы закладок (manifest.js + воркспейсы)
 themes/         7 тем + manifest.js
 modules/        модули (healthcheck включён)
 server.py       локальный сервер
+deploy/         systemd-юнит и установщик
 readme.html     полная документация
 ```
 

@@ -97,6 +97,13 @@ python3 server.py
 <h3>Вариант 3 — на LXC с nginx</h3>
 <p>Для статики достаточно nginx, но тогда не будет записи и проверок (они требуют <code>server.py</code>). Если нужен полный набор — запускайте <code>server.py</code> как systemd-юнит или в контейнере.</p>
 
+<h2 id="service">Сервис systemd</h2>
+<p>Чтобы страница поднималась сама и переживала перезагрузку, есть установщик:</p>
+<pre><code>sudo ./deploy/install.sh
+sudo HOST=0.0.0.0 PORT=9000 ./deploy/install.sh   # доступ из локальной сети</code></pre>
+<p>Скрипт создаёт пользователя <code>skhodnya</code>, копирует проект в <code>/opt/skhodnya</code>, ставит unit и включает автозапуск. Данные при обновлении не перезаписываются. Подробности — <code>deploy/README.md</code>.</p>
+<p>Проверки: <code>systemctl status skhodnya</code>, <code>journalctl -u skhodnya -f</code>. Для ping сервису точечно выдаётся <code>CAP_NET_RAW</code>, root не нужен.</p>
+
 <h2 id="files">Файлы и данные</h2>
 <pre><code>start-page/
   index.html          страница (разметка, стили, логика)

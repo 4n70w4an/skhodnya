@@ -1,0 +1,21 @@
+# Пользовательский вариант (ноутбук, без root):
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/skhodnya-user.service ~/.config/systemd/user/skhodnya.service
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now skhodnya
+#   loginctl enable-linger "$USER"   # чтобы работало без входа в систему
+[Unit]
+Description=Сходня (пользовательский запуск)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/skhodnya
+ExecStart=/usr/bin/python3 %h/skhodnya/server.py --host 127.0.0.1 --port 8080
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

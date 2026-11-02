@@ -1,0 +1,31 @@
+[Unit]
+Description=Сходня — стартовая страница для домашней лаборатории
+Documentation=https://github.com/4n70w4an/skhodnya
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=skhodnya
+Group=skhodnya
+WorkingDirectory=/opt/skhodnya
+ExecStart=/usr/bin/python3 /opt/skhodnya/server.py --host 127.0.0.1 --port 8080
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+SyslogIdentifier=skhodnya
+
+# Проверки ping: даём только CAP_NET_RAW, без root
+AmbientCapabilities=CAP_NET_RAW
+CapabilityBoundingSet=CAP_NET_RAW
+NoNewPrivileges=yes
+
+# Изоляция: файловая система только для чтения, запись — лишь в data/
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/opt/skhodnya/data
+
+[Install]
+WantedBy=multi-user.target

@@ -10,3 +10,6 @@ __pycache__/
 # ОС
 .DS_Store
 Thumbs.db
+
+# Личные данные (не публикуем)
+data/*.personal.js

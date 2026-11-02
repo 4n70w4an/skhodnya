@@ -1,142 +1,45 @@
+/* Сходня — демо-воркспейс «Дом». Формат: window.START_PAGE = { ... } (валидный JSON внутри).
+   Поля элемента: id, title, url, note (необязательно), tags (массив), fav (bool), checks (массив проверок). */
 window.START_PAGE = {
   "id": "home",
   "title": "Дом",
-  "subtitle": "всё под рукой",
+  "subtitle": "демо-набор",
   "groups": [
     {
-      "id": "g-proxmox",
-      "title": "Proxmox",
+      "id": "g-daily",
+      "title": "Каждый день",
       "items": [
-        {
-          "id": "i-pve1",
-          "title": "PVE 1",
-          "url": "https://192.168.0.115:8006",
-          "note": "основной гипервизор",
-          "tags": [
-            "pve",
-            "веб"
-          ],
-          "fav": true,
-          "checks": [
-            {
-              "type": "http",
-              "interval": 5
-            },
-            {
-              "type": "ping",
-              "interval": 5,
-              "host": "192.168.0.115"
-            }
-          ]
-        },
-        {
-          "id": "i-pve2",
-          "title": "PVE 2",
-          "url": "https://192.168.3.11:8006",
-          "note": "второй узел",
-          "tags": [
-            "pve",
-            "веб"
-          ],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "i-google", "title": "Google", "url": "https://www.google.com", "note": "поиск", "tags": ["поиск"], "fav": true, "checks": [] },
+        { "id": "i-youtube", "title": "YouTube", "url": "https://www.youtube.com", "note": "видео", "tags": ["медиа"], "fav": true, "checks": [] },
+        { "id": "i-gmail", "title": "Gmail", "url": "https://mail.google.com", "note": "почта", "tags": ["почта"], "fav": false, "checks": [] },
+        { "id": "i-drive", "title": "Google Drive", "url": "https://drive.google.com", "note": "файлы", "tags": ["файлы"], "fav": false, "checks": [] }
       ]
     },
     {
-      "id": "g-docker",
-      "title": "Docker и сервисы",
+      "id": "g-dev",
+      "title": "Разработка",
       "items": [
-        {
-          "id": "i-dockge",
-          "title": "Dockge",
-          "url": "http://192.168.3.10:5001",
-          "note": "compose-стеки",
-          "tags": [
-            "docker"
-          ],
-          "fav": true,
-          "checks": []
-        },
-        {
-          "id": "i-mattermost",
-          "title": "Mattermost",
-          "url": "https://mattermost.local",
-          "note": "чат",
-          "tags": [
-            "чат"
-          ],
-          "fav": false,
-          "checks": []
-        },
-        {
-          "id": "i-uptime",
-          "title": "Uptime Kuma",
-          "url": "http://192.168.3.10:3001",
-          "note": "статусы сервисов",
-          "tags": [
-            "мониторинг"
-          ],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "i-github", "title": "GitHub", "url": "https://github.com", "note": "код", "tags": ["git"], "fav": true, "checks": [] },
+        { "id": "i-stackoverflow", "title": "Stack Overflow", "url": "https://stackoverflow.com", "note": "вопросы и ответы", "tags": ["код"], "fav": false, "checks": [] },
+        { "id": "i-mdn", "title": "MDN Web Docs", "url": "https://developer.mozilla.org", "note": "документация", "tags": ["docs"], "fav": false, "checks": [] }
       ]
     },
     {
-      "id": "g-tables",
-      "title": "Таблицы",
+      "id": "g-docs",
+      "title": "Документы",
       "items": [
-        {
-          "id": "i-sheet1",
-          "title": "Таблица — заявки",
-          "url": "https://docs.google.com/spreadsheets/d/ЗАМЕНИ_НА_ID/edit",
-          "note": "Google Sheets",
-          "tags": [
-            "sheets",
-            "работа"
-          ],
-          "fav": true,
-          "checks": []
-        },
-        {
-          "id": "i-sheet2",
-          "title": "Локальный xlsx",
-          "url": "file:///home/ankasatikov/Документы/Отчёты/свод.xlsx",
-          "note": "открывается как файл",
-          "tags": [
-            "xlsx"
-          ],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "i-docs", "title": "Google Docs", "url": "https://docs.google.com", "note": "тексты", "tags": ["docs"], "fav": false, "checks": [] },
+        { "id": "i-sheets", "title": "Google Sheets", "url": "https://docs.google.com/spreadsheets", "note": "таблицы", "tags": ["sheets"], "fav": false, "checks": [] },
+        { "id": "i-wiki", "title": "Wikipedia", "url": "https://ru.wikipedia.org", "note": "справка", "tags": ["docs"], "fav": false, "checks": [] }
       ]
     },
     {
       "id": "g-other",
-      "title": "Прочее",
+      "title": "Разное",
       "items": [
-        {
-          "id": "i-dude",
-          "title": "The Dude",
-          "url": "http://192.168.3.10:2210",
-          "note": "web-интерфейс, если включён",
-          "tags": [
-            "сеть"
-          ],
-          "fav": false,
-          "checks": []
-        },
-        {
-          "id": "i-grafana",
-          "title": "Grafana",
-          "url": "http://192.168.3.10:3000",
-          "note": "графики",
-          "tags": [
-            "мониторинг"
-          ],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "i-reddit", "title": "Reddit", "url": "https://www.reddit.com", "note": "", "tags": ["сообщество"], "fav": false, "checks": [] },
+        { "id": "i-habr", "title": "Habr", "url": "https://habr.com", "note": "статьи", "tags": ["сообщество"], "fav": false, "checks": [] },
+        { "id": "i-maps", "title": "Google Maps", "url": "https://maps.google.com", "note": "карты", "tags": ["карты"], "fav": false, "checks": [] }
       ]
     }
   ]

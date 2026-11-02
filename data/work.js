@@ -1,46 +1,24 @@
-/* Сходня — воркспейс «Работа». */
+/* Сходня — демо-воркспейс «Работа». */
 window.START_PAGE = {
   "id": "work",
   "title": "Работа",
-  "subtitle": "задачи и сервисы",
+  "subtitle": "демо-набор",
   "groups": [
     {
-      "id": "g-work-1",
-      "title": "Ежедневное",
+      "id": "g-work-day",
+      "title": "Рабочий день",
       "items": [
-        {
-          "id": "w-1",
-          "title": "Dockge — прод",
-          "url": "http://192.168.3.10:5001",
-          "note": "стеки продакшена",
-          "tags": ["docker"],
-          "fav": true,
-          "checks": []
-        },
-        {
-          "id": "w-2",
-          "title": "Таблица — смены",
-          "url": "https://docs.google.com/spreadsheets/d/ЗАМЕНИ_НА_ID/edit",
-          "note": "",
-          "tags": ["sheets"],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "w-calendar", "title": "Google Calendar", "url": "https://calendar.google.com", "note": "встречи", "tags": ["календарь"], "fav": true, "checks": [] },
+        { "id": "w-slack", "title": "Slack", "url": "https://app.slack.com", "note": "чат", "tags": ["чат"], "fav": false, "checks": [] },
+        { "id": "w-notion", "title": "Notion", "url": "https://www.notion.so", "note": "заметки", "tags": ["docs"], "fav": false, "checks": [] }
       ]
     },
     {
-      "id": "g-work-2",
-      "title": "Документация",
+      "id": "g-work-docs",
+      "title": "Документы",
       "items": [
-        {
-          "id": "w-3",
-          "title": "Wiki",
-          "url": "https://wiki.local",
-          "note": "",
-          "tags": ["docs"],
-          "fav": false,
-          "checks": []
-        }
+        { "id": "w-sheets", "title": "Google Sheets", "url": "https://docs.google.com/spreadsheets", "note": "таблицы", "tags": ["sheets"], "fav": false, "checks": [] },
+        { "id": "w-docs", "title": "Google Docs", "url": "https://docs.google.com", "note": "тексты", "tags": ["docs"], "fav": false, "checks": [] }
       ]
     }
   ]

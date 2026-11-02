@@ -118,13 +118,7 @@
             card.appendChild(inline);
           }
           if (!inline) return;
-          inline.innerHTML = cs.map((c, i) => {
-            const r = results.get(keyOf(it, i));
-            const st = statusClass(r);
-            const ms = r && r.ms != null ? Math.round(r.ms) + ' мс' : '—';
-            return '<span class="hc-chip ' + st + '" title="' + S.esc(c.type + ' ' + targetOf(it, c)) + '"><i></i>' +
-              S.esc(c.type) + ' ' + ms + '</span>';
-          }).join('');
+          inline.innerHTML = cs.map((c, i) => rowHTML(it, c, i)).join('');
           return;
         }
 

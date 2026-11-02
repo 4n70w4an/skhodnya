@@ -138,28 +138,17 @@
 .hc-inline {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
   margin-left: auto;
   margin-right: 26px;
-  max-width: 55%;
+  max-width: 62%;
   justify-content: flex-end;
 }
-.hc-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
-  border-radius: 99px;
-  border: 1px solid var(--line);
-  background: var(--panel-2);
-  font-size: 10.5px;
-  color: var(--dim);
-  white-space: nowrap;
-}
-.hc-chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
-.hc-chip.up i { background: var(--ok); }
-.hc-chip.down i { background: var(--danger); }
+.hc-inline .hc-item { margin-top: 0; padding: 3px 8px; font-size: 11px; border-radius: 8px; }
+.hc-inline .hc-item + .hc-item { margin-top: 0; }
+.hc-inline .hc-kind { font-size: 9px; }
+.hc-inline .hc-target { max-width: 150px; }
 .grid.list .hc-dot, .grid.list .hc-pane { display: none; }
 .grid.list .cardwrap .acts { top: 50%; transform: translateY(-50%); }
 

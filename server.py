@@ -339,6 +339,9 @@ class Handler(SimpleHTTPRequestHandler):
             ensure_manifest()
             items, manifest = scan_workspaces()
             return self.json({"items": items, "manifest": manifest or {}, "dataDir": str(DATA_DIR)})
+        if path == "/api/roots":
+            roots = [{"name": str(r), "path": str(r)} for r in BROWSE_ROOTS if r.is_dir()]
+            return self.json({"roots": roots})
         if path == "/api/browse":
             return self.api_browse()
         if path == "/api/modules":

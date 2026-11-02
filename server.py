@@ -32,7 +32,7 @@ import urllib.error
 import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent
 LOCK_TTL = 25.0
@@ -84,6 +84,26 @@ def read_workspace(path: Path):
     return read_js_object(path, "START_PAGE")
 
 
+def parse_workspace_text(text: str):
+    """JSON или старый window.START_PAGE = {...} из строки."""
+    try:
+        obj = json.loads(text)
+        return obj if isinstance(obj, dict) else None
+    except json.JSONDecodeError:
+        pass
+    m = re.search(r"^\s*window\.START_PAGE\s*=\s*", text, re.MULTILINE)
+    if not m:
+        return None
+    body = text[m.end():].strip()
+    if body.endswith(";"):
+        body = body[:-1].strip()
+    try:
+        obj = json.loads(body)
+        return obj if isinstance(obj, dict) else None
+    except json.JSONDecodeError:
+        return None
+
+
 def read_manifest():
     obj = read_json(ROOT / "data" / "manifest.json")
     if obj is not None:
@@ -104,7 +124,7 @@ def write_manifest(obj: dict) -> None:
 SKIP_WS_NAMES = {"manifest.js", "manifest.json"}
 
 
-def _workspace_files():
+def _workspace_files(include_personal: bool = False):
     data = ROOT / "data"
     if not data.is_dir():
         return []
@@ -113,7 +133,9 @@ def _workspace_files():
         if not path.is_file() or path.suffix not in (".json", ".js"):
             continue
         name = path.name
-        if name in SKIP_WS_NAMES or ".personal." in name or name.endswith(".bak"):
+        if name in SKIP_WS_NAMES or name.endswith(".bak"):
+            continue
+        if ".personal." in name and not include_personal:
             continue
         rel = path.relative_to(ROOT).as_posix()
         if not rel.startswith("data/"):
@@ -127,14 +149,14 @@ def _slug(value: str) -> str:
     return value or "workspace"
 
 
-def scan_workspaces():
+def scan_workspaces(include_personal: bool = False):
     manifest = read_manifest() or {}
     workspaces = manifest.get("workspaces")
     if not isinstance(workspaces, list):
         workspaces = []
     known = {str(w.get("file")) for w in workspaces if isinstance(w, dict)}
     items = []
-    for rel, path in _workspace_files():
+    for rel, path in _workspace_files(include_personal):
         page = read_workspace(path) or {}
         items.append({
             "file": rel,
@@ -250,7 +272,9 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/config":
             return self.json({"mode": "http", "canWrite": True, "canCreate": True, "modules": modules_meta})
         if path == "/api/scan":
-            items, manifest = scan_workspaces()
+            q = parse_qs(urlparse(self.path).query)
+            personal = q.get("personal", ["0"])[0] in ("1", "true", "yes")
+            items, manifest = scan_workspaces(personal)
             return self.json({"items": items, "manifest": manifest or {}})
         if path == "/api/modules":
             return self.json(modules_meta)
@@ -273,6 +297,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.api_copy(payload)
         if path == "/api/manifest/add":
             return self.api_manifest_add(payload)
+        if path == "/api/import":
+            return self.api_import(payload)
         if path.startswith("/api/modules/"):
             return self.module_call("POST", path, payload)
         self.json({"error": "not found"}, 404)
@@ -344,6 +370,54 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             atomic_write(ROOT / file, "window.START_PAGE = " + content.rstrip() + ";\n")
         return self.json({"ok": True})
+
+    # ---------- импорт папки с компьютера (загрузка файлов) ----------
+    def api_import(self, p: dict):
+        files = p.get("files") or []
+        if not isinstance(files, list) or not files:
+            return self.json({"error": "bad request"}, 400)
+        manifest = read_manifest()
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("workspaces"), list):
+            return self.json({"error": "манифест не читается — проверьте data/manifest.json"}, 400)
+
+        known = {str(w.get("file")) for w in manifest["workspaces"] if isinstance(w, dict)}
+        ids = {str(w.get("id")) for w in manifest["workspaces"] if isinstance(w, dict)}
+        added = []
+        for item in files[:80]:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "")
+            content = item.get("content")
+            if not isinstance(content, str) or len(content.encode("utf-8")) > 2 * 1024 * 1024:
+                continue
+            page = parse_workspace_text(content)
+            if not isinstance(page, dict) or not isinstance(page.get("groups"), list):
+                continue
+            stem = _slug(Path(name).stem) or "workspace"
+            n = 2
+            target_rel = f"data/{stem}.json"
+            while (ROOT / target_rel).exists():
+                target_rel = f"data/{stem}-{n}.json"
+                n += 1
+            target = ROOT / target_rel
+            target.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+            title = str(page.get("title") or stem)
+            base = _slug(str(page.get("id") or stem))
+            ws_id = base
+            n = 2
+            while ws_id in ids:
+                ws_id = f"{base}-{n}"
+                n += 1
+            entry = {"id": ws_id, "title": title, "file": target_rel}
+            manifest["workspaces"].append(entry)
+            known.add(target_rel)
+            ids.add(ws_id)
+            added.append(entry)
+
+        if added:
+            write_manifest(manifest)
+        return self.json({"ok": True, "added": added, "manifest": manifest})
 
     # ---------- манифест: добавить найденные воркспейсы ----------
     def api_manifest_add(self, p: dict):

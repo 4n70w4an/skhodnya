@@ -1,0 +1,135 @@
+/* Сходня — модуль healthcheck: стили. Всё под своим префиксом .hc-. */
+
+/* кружок на карточке */
+.hc-dot {
+  position: absolute;
+  left: 7px;
+  bottom: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 0 2px var(--panel);
+  transition: background-color .2s ease;
+}
+.hc-dot.up { background: var(--ok); }
+.hc-dot.down { background: var(--danger); }
+
+/* панель статусов при наведении */
+.hc-pane {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 0;
+  z-index: 45;
+  min-width: 232px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-4px);
+  transition: opacity .15s ease, transform .15s ease, visibility .15s;
+  pointer-events: none;
+}
+.cardwrap:hover .hc-pane { opacity: 1; visibility: visible; transform: none; }
+.cardwrap.flip .hc-pane { left: auto; right: calc(100% + 10px); transform: translateX(4px); }
+.cardwrap.flip:hover .hc-pane { transform: none; }
+
+/* плитка группы */
+.gtile .hc-dot { left: auto; right: 10px; bottom: 10px; }
+.gtile .hc-pane { min-width: 262px; }
+.gtile:hover .hc-pane { opacity: 1; visibility: visible; transform: none; }
+.gtile.flip .hc-pane { left: auto; right: calc(100% + 10px); transform: translateX(4px); }
+.gtile.flip:hover .hc-pane { transform: none; }
+.grid.list .hc-pane { top: 50%; margin-top: -10px; }
+
+.hc-ptitle {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--dim);
+  padding: 2px 4px 6px;
+  font-weight: 600;
+}
+
+/* строка сервиса: отдельный скруглённый прямоугольник */
+.hc-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+.hc-item + .hc-item { margin-top: 6px; }
+.hc-sdot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex: 0 0 auto; }
+.hc-item.up .hc-sdot { background: var(--ok); }
+.hc-item.down .hc-sdot { background: var(--danger); }
+.hc-kind { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); }
+.hc-name { font-size: 11.5px; color: var(--text); max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 0 auto; }
+.hc-target { flex: 1; font-family: var(--mono); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-ms { color: var(--dim); font-size: 11px; }
+
+/* блок проверок в окне деталей */
+.hc-details { margin-top: 2px; }
+.hc-dhead {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--dim); font-weight: 600; margin-bottom: 6px;
+}
+.hc-details .hc-item { font-size: 12.5px; padding: 9px 11px; }
+
+/* редактор */
+.hc-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin-top: 2px;
+}
+.hc-ehead {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--dim); font-weight: 600;
+}
+.hc-count {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 99px; padding: 1px 7px; font-size: 10px;
+}
+.hc-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 80px 86px 34px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.hc-row.no-port { grid-template-columns: 92px minmax(0, 1fr) 86px 34px; }
+.hc-row.no-port .hc-port { display: none; }
+.hc-row select, .hc-row input { width: 100%; min-width: 0; }
+.hc-target {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hc-intwrap { position: relative; display: flex; align-items: center; }
+.hc-intwrap input { padding-right: 20px; }
+.hc-suffix { position: absolute; right: 7px; font-size: 10px; color: var(--dim); pointer-events: none; }
+.hc-del { padding: 6px 8px; }
+.hc-add { align-self: flex-start; border-style: dashed; color: var(--dim); }
+.hc-add:hover { color: var(--text); border-color: var(--accent); }
+.hc-hint { font-size: 11px; color: var(--dim); line-height: 1.45; }
+
+@media (max-width: 640px) {
+  .hc-row, .hc-row.no-port { grid-template-columns: 1fr 1fr; }
+  .hc-row .hc-target { grid-column: 1 / -1; }
+}

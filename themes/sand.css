@@ -1,0 +1,20 @@
+/* Сходня — «Песок»: светлая тёплая, не белая. */
+:root[data-theme="sand"] {
+  color-scheme: light;
+  --bg: #e9e5da;
+  --panel: #f7f4ec;
+  --panel-2: #e4ded1;
+  --line: #d2c9b8;
+  --text: #2e2b24;
+  --dim: #6c655a;
+  --accent: #7a6a48;
+  --accent-2: #5c7f6a;
+  --ok: #4f7a4a;
+  --warn: #9a6b1f;
+  --danger: #b23a32;
+  --shadow: 0 12px 30px rgba(70, 60, 40, .12);
+  --radius: 14px;
+}
+html[data-theme="sand"] body { background: transparent; }
+html[data-theme="sand"] .topbar { background: rgba(233, 229, 218, .88); backdrop-filter: blur(12px); }
+html[data-theme="sand"] .overlay { background: rgba(46, 43, 36, .38); }

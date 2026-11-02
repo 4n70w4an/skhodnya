@@ -1,0 +1,20 @@
+/* Сходня — «Бумага»: спокойная светлая, тёплая, без белого. */
+:root[data-theme="paper"] {
+  color-scheme: light;
+  --bg: #efece5;
+  --panel: #faf8f4;
+  --panel-2: #eae6de;
+  --line: #d8d2c7;
+  --text: #2b2a27;
+  --dim: #6d6a63;
+  --accent: #3f5f8a;
+  --accent-2: #5a7d5a;
+  --ok: #3f7a45;
+  --warn: #9a6a1a;
+  --danger: #b03a34;
+  --shadow: 0 12px 28px rgba(60, 55, 45, .12);
+  --radius: 13px;
+}
+html[data-theme="paper"] body { background: transparent; }
+html[data-theme="paper"] .topbar { background: rgba(239, 236, 229, .9); backdrop-filter: blur(12px); }
+html[data-theme="paper"] .overlay { background: rgba(43, 42, 39, .36); }

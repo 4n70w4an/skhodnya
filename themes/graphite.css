@@ -1,0 +1,19 @@
+/* Сходня — «Графит»: тёмная нейтральная, без синевы. */
+:root[data-theme="graphite"] {
+  color-scheme: dark;
+  --bg: #16181b;
+  --panel: #1e2126;
+  --panel-2: #262a30;
+  --line: #343a42;
+  --text: #e8eaed;
+  --dim: #9aa3ad;
+  --accent: #8ab4f8;
+  --accent-2: #81c995;
+  --ok: #81c995;
+  --warn: #fdd663;
+  --danger: #f28b82;
+  --shadow: 0 12px 30px rgba(0, 0, 0, .45);
+  --radius: 12px;
+}
+html[data-theme="graphite"] body { background: transparent; }
+html[data-theme="graphite"] .topbar { background: rgba(22, 24, 27, .86); backdrop-filter: blur(12px); }

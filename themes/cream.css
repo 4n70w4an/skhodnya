@@ -1,0 +1,20 @@
+/* Сходня — кремовая: тёплая светлая, без белого. */
+:root[data-theme="cream"] {
+  color-scheme: light;
+  --bg: #f2ebdd;
+  --panel: #fbf6ea;
+  --panel-2: #efe4d1;
+  --line: #ddceb6;
+  --text: #3a3226;
+  --dim: #7c6b55;
+  --accent: #a4642a;
+  --accent-2: #5e8a5a;
+  --ok: #4e7d3f;
+  --warn: #a06a12;
+  --danger: #b23b2e;
+  --shadow: 0 12px 30px rgba(80, 60, 30, .14);
+  --radius: 14px;
+}
+html[data-theme="cream"] body { background: transparent; }
+html[data-theme="cream"] .topbar { background: rgba(242, 235, 221, .88); backdrop-filter: blur(12px); }
+html[data-theme="cream"] .overlay { background: rgba(58, 50, 38, .38); }

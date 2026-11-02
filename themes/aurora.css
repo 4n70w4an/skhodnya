@@ -1,0 +1,42 @@
+/* Сходня — Aurora: переливающийся тёмно-сине-изумрудный фон.
+   Анимацию отключает тумблер «Без анимаций» (класс .no-motion на <html>)
+   и системная настройка prefers-reduced-motion. */
+:root[data-theme="aurora"] {
+  color-scheme: dark;
+  --bg: #06121c;
+  --panel: rgba(12, 26, 40, .82);
+  --panel-2: rgba(16, 36, 54, .92);
+  --line: #1d3a4f;
+  --text: #e8f3f2;
+  --dim: #a3c0c7;
+  --accent: #4fb3ff;
+  --accent-2: #2fe0a8;
+  --ok: #35d07f;
+  --warn: #e3b341;
+  --danger: #ff6b6b;
+  --shadow: 0 14px 40px rgba(0, 10, 20, .45);
+}
+
+html[data-theme="aurora"] {
+  background: linear-gradient(130deg, #06121c, #0a2d4a 28%, #0b3b33 52%, #071a2a 76%, #06121c);
+  background-size: 300% 300%;
+  animation: aurora-shift 32s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-shift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+html[data-theme="aurora"].no-motion { animation: none; }
+
+html[data-theme="aurora"] body { background: transparent; }
+html[data-theme="aurora"] .card {
+  background: linear-gradient(180deg, rgba(13, 30, 45, .9), rgba(8, 20, 30, .9));
+  backdrop-filter: blur(3px);
+}
+html[data-theme="aurora"] .topbar { background: rgba(6, 18, 28, .72); backdrop-filter: blur(12px); }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="aurora"] { animation: none; }
+}

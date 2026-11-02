@@ -1,0 +1,27 @@
+/* Сходня — Android, светлая (Material 3, tonal surfaces). */
+:root[data-theme="android_light"] {
+  color-scheme: light;
+  --bg: #efe8f4;
+  --panel: #faf6fe;
+  --panel-2: #e9e0ef;
+  --line: #cec3d6;
+  --text: #1d1b20;
+  --dim: #49454f;
+  --accent: #6750a4;
+  --accent-2: #625b71;
+  --ok: #2e7d32;
+  --warn: #a15c00;
+  --danger: #ba1a1a;
+  --shadow: 0 10px 24px rgba(103, 80, 164, .16);
+  --radius: 20px;
+}
+
+html[data-theme="android_light"] body { background: transparent; }
+html[data-theme="android_light"] .topbar { background: rgba(254, 247, 255, .85); backdrop-filter: blur(14px); }
+html[data-theme="android_light"] .card { border-color: transparent; box-shadow: 0 1px 3px rgba(29, 27, 32, .12); }
+html[data-theme="android_light"] .card:hover { border-color: transparent; box-shadow: 0 12px 26px rgba(103, 80, 164, .22); }
+html[data-theme="android_light"] .tag { background: rgba(103, 80, 164, .10); color: var(--accent); border-color: rgba(103, 80, 164, .28); }
+html[data-theme="android_light"] input,
+html[data-theme="android_light"] select { background: var(--panel-2); border-color: transparent; }
+html[data-theme="android_light"] button { border-color: transparent; }
+html[data-theme="android_light"] .overlay { background: rgba(29, 27, 32, .38); }

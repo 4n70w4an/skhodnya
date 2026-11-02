@@ -1,0 +1,15 @@
+/* Сходня — список тем. Новую тему: положить themes/<id>.css и добавить строку.
+   sw — два цвета для свотча в настройках; motion: true — у темы есть анимация. */
+window.START_THEMES = [
+  { "id": "dark_base", "title": "Тёмная", "file": "themes/dark_base.css", "sw": ["#0e1116", "#5b9dff"] },
+  { "id": "light_base", "title": "Светлая", "file": "themes/light_base.css", "sw": ["#f4f6fa", "#2f6fed"] },
+  { "id": "cream", "title": "Крем", "file": "themes/cream.css", "sw": ["#f2ebdd", "#a4642a"] },
+  { "id": "aurora", "title": "Aurora", "file": "themes/aurora.css", "sw": ["#071018", "#2fe0a8"], "motion": true },
+  { "id": "apple_dark", "title": "Apple тёмная", "file": "themes/apple_dark.css", "sw": ["#000000", "#0a84ff"] },
+  { "id": "apple_light", "title": "Apple светлая", "file": "themes/apple_light.css", "sw": ["#e6e6ea", "#0071e3"] },
+  { "id": "android_dark", "title": "Android тёмная", "file": "themes/android_dark.css", "sw": ["#1c1b1f", "#d0bcff"] },
+  { "id": "android_light", "title": "Android светлая", "file": "themes/android_light.css", "sw": ["#efe8f4", "#6750a4"] },
+  { "id": "paper", "title": "Бумага", "file": "themes/paper.css", "sw": ["#efece5", "#3f5f8a"] },
+  { "id": "sand", "title": "Песок", "file": "themes/sand.css", "sw": ["#e9e5da", "#7a6a48"] },
+  { "id": "graphite", "title": "Графит", "file": "themes/graphite.css", "sw": ["#16181b", "#8ab4f8"] }
+];

@@ -1,0 +1,8 @@
+{
+  "id": "healthcheck",
+  "title": "Проверки доступности",
+  "version": "0.1.0",
+  "entry": "module.py",
+  "assets": ["module.css", "module.js"],
+  "enabled": true
+}

@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Локальные бэкапы и временные файлы
+*.bak
+*.tmp
+*.log
+
+# ОС
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+/* Сходня — светлая тема. */
+:root[data-theme="light_base"] {
+  color-scheme: light;
+  --bg: #e7ecf4;
+  --panel: #f9fbfe;
+  --panel-2: #e0e7f1;
+  --line: #ccd6e4;
+  --text: #16202e;
+  --dim: #5d6b80;
+  --accent: #2f6fed;
+  --accent-2: #0f9d76;
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --danger: #cf222e;
+  --shadow: 0 10px 28px rgba(31, 45, 66, .10);
+}
+html[data-theme="light_base"] body { background: transparent; }
+html[data-theme="light_base"] .card { background: var(--panel); }
+html[data-theme="light_base"] .overlay { background: rgba(20, 30, 45, .35); }

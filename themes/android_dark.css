@@ -1,0 +1,27 @@
+/* Сходня — Android, тёмная (Material 3, tonal surfaces). */
+:root[data-theme="android_dark"] {
+  color-scheme: dark;
+  --bg: #1c1b1f;
+  --panel: #211f26;
+  --panel-2: #2b2930;
+  --line: #49454f;
+  --text: #e6e1e5;
+  --dim: #cac4d0;
+  --accent: #d0bcff;
+  --accent-2: #b9f6ca;
+  --ok: #81c995;
+  --warn: #fdd663;
+  --danger: #f2b8b5;
+  --shadow: 0 12px 30px rgba(0, 0, 0, .5);
+  --radius: 20px;
+}
+
+html[data-theme="android_dark"] body { background: transparent; }
+html[data-theme="android_dark"] .topbar { background: rgba(28, 27, 31, .82); backdrop-filter: blur(14px); }
+html[data-theme="android_dark"] .card { background: var(--panel); border-color: transparent; }
+html[data-theme="android_dark"] .card:hover { border-color: transparent; box-shadow: var(--shadow); }
+html[data-theme="android_dark"] button.primary { color: #381e72; background: var(--accent); border-color: transparent; }
+html[data-theme="android_dark"] .tag { background: rgba(208, 188, 255, .14); color: var(--accent); border-color: rgba(208, 188, 255, .32); }
+html[data-theme="android_dark"] input,
+html[data-theme="android_dark"] select { background: var(--panel-2); border-color: var(--line); }
+html[data-theme="android_dark"] button { border-color: transparent; }

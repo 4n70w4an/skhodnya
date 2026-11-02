@@ -1,0 +1,32 @@
+/* Сходня — Apple, тёмная (стиль iOS 15–16, без liquid glass). */
+:root[data-theme="apple_dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #1c1c1e;
+  --panel-2: #2c2c2e;
+  --line: #4a4a4d;
+  --text: #f5f5f7;
+  --dim: #a6a6ab;
+  --accent: #0a84ff;
+  --accent-2: #30d158;
+  --ok: #30d158;
+  --warn: #ffd60a;
+  --danger: #ff453a;
+  --shadow: 0 14px 34px rgba(0, 0, 0, .55);
+  --radius: 16px;
+}
+
+html[data-theme="apple_dark"] body { background: transparent; }
+html[data-theme="apple_dark"] .topbar {
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+html[data-theme="apple_dark"] .card {
+  background: var(--panel);
+  border-color: transparent;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset;
+}
+html[data-theme="apple_dark"] .card:hover { border-color: transparent; box-shadow: 0 14px 34px rgba(0, 0, 0, .55); }
+html[data-theme="apple_dark"] input,
+html[data-theme="apple_dark"] select { background: var(--panel-2); border-color: var(--line); }
+html[data-theme="apple_dark"] button { border-color: transparent; }

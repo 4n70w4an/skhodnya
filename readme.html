@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сходня — документация</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a22; --panel2:#1b2230; --line:#232c3b;
+    --text:#e6edf7; --dim:#8b98ab; --accent:#5b9dff; --accent2:#39d3a0;
+    --code:#0b0f14;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 var(--font)}
+  .layout{display:grid;grid-template-columns:260px minmax(0,1fr);max-width:1200px;margin:0 auto;gap:40px;padding:0 24px 80px}
+  nav{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:28px 0 40px}
+  nav .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px;text-decoration:none;color:var(--text)}
+  nav .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  nav .brand b{font-size:17px}
+  nav a{display:block;color:var(--dim);text-decoration:none;font-size:14px;padding:5px 10px;border-radius:8px;border-left:2px solid transparent}
+  nav a:hover{color:var(--text);background:var(--panel)}
+  nav a.sub{padding-left:22px;font-size:13px}
+  nav .ver{font-size:12px;color:var(--dim);margin-top:18px;padding-left:10px}
+  main{padding-top:28px;min-width:0}
+  h1{font-size:32px;margin:0 0 6px;letter-spacing:-.3px}
+  .lead{color:var(--dim);margin:0 0 28px;font-size:17px}
+  h2{font-size:22px;margin:44px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:24px 0 8px}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:13.5px;line-height:1.5}
+  pre code{background:none;border:0;padding:0;font-size:13.5px}
+  ul,ol{padding-left:22px}
+  li{margin:5px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--dim);font-weight:600}
+  .note{border-left:3px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0}
+  .warn{border-left-color:#d29922}
+  .bad{border-left-color:#f85149}
+  kbd{font:12px/1 var(--mono);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:2px 6px;background:var(--panel2)}
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;gap:0}
+    nav{position:static;max-height:none;border-bottom:1px solid var(--line);padding-bottom:16px}
+    nav a{display:inline-block;border-left:0;border:1px solid var(--line);margin:2px}
+    nav a.sub{display:none}
+    main{padding-top:20px}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <a class="brand" href="index.html"><span class="logo">С</span><b>Сходня</b></a>
+  <a href="#about">Что это</a>
+  <a href="#start">Быстрый старт</a>
+  <a href="#files">Файлы и данные</a>
+  <a href="#workspaces">Воркспейсы</a>
+  <a href="#edit">Редактирование</a>
+  <a href="#save">Сохранение и блокировки</a>
+  <a href="#themes">Темы</a>
+  <a href="#modules">Модули</a>
+  <a href="#health">Проверки доступности</a>
+  <a href="#search">Поиск</a>
+  <a href="#keys">Горячие клавиши</a>
+  <a href="#faq">Вопросы и проблемы</a>
+  <a href="#limits">Ограничения</a>
+  <div class="ver">alpha 0.0.3</div>
+</nav>
+
+<main>
+<h1>Сходня</h1>
+<p class="lead">Одна страница вместо полусотни вкладок: сервисы, таблицы, Proxmox — с поиском, группами и проверками доступности.</p>
+
+<h2 id="about">Что это</h2>
+<p>Сходня — стартовая страница для домашней лаборатории: одностраничное приложение и лёгкий Python-сервер. Ссылки на сервисы сгруппированы по смыслу и лежат в отдельных файлах <code>data/</code>, поэтому их можно править руками, а можно мышью прямо в браузере.</p>
+<ul>
+  <li>работает без интернета и без сервера — просто открыть <code>index.html</code>;</li>
+  <li>с сервером — запись файлов на диск, блокировка от одновременной правки, проверки доступности;</li>
+  <li>ничего не отправляет наружу: ни телеметрии, ни запросов к CDN.</li>
+</ul>
+
+<h2 id="start">Быстрый старт</h2>
+<div class="warn note">Сходня работает только через сервер. Открытие <code>index.html</code> как файла покажет «Нужен сервер»: без бэкенда нет ни записи, ни проверок, ни блокировок.</div>
+<h3>Вариант 2 — сервер (рекомендуется)</h3>
+<pre><code>cd start-page
+python3 server.py
+# Сходня: http://127.0.0.1:8080</code></pre>
+<p>Доступ только с этой машины. Чтобы открыть с телефона или другого ПК:</p>
+<pre><code>python3 server.py --host 0.0.0.0 --port 8080</code></pre>
+<div class="warn note">Сервер не имеет авторизации. Не выставляйте его в интернет; для домашней сети этого достаточно, для внешнего доступа — только через VPN.</div>
+<h3>Вариант 3 — на LXC с nginx</h3>
+<p>Для статики достаточно nginx, но тогда не будет записи и проверок (они требуют <code>server.py</code>). Если нужен полный набор — запускайте <code>server.py</code> как systemd-юнит или в контейнере.</p>
+
+<h2 id="files">Файлы и данные</h2>
+<pre><code>start-page/
+  index.html          страница (разметка, стили, логика)
+  readme.html         эта документация
+  README.md           короткая памятка
+  server.py           локальный сервер (необязателен)
+  data/
+    manifest.js       список воркспейсов  ← файл закладок №1
+    home.js           воркспейс «Дом»     ← файл закладок №2
+    work.js           воркспейс «Работа»
+  themes/
+    manifest.js       список тем
+    dark_base.css     тёмная (по умолчанию)
+    light_base.css    светлая
+    cream.css         кремовая
+    aurora.css        переливающийся фон
+    apple_*.css       Apple, тёмная и светлая
+    android_*.css     Android, тёмная и светлая
+    paper.css         «Бумага», спокойная светлая
+    sand.css          «Песок», тёплая светлая
+    graphite.css      «Графит», тёмная нейтральная
+  modules/
+    healthcheck/      проверки доступности (подключается автоматически)</code></pre>
+<p>Формат файла воркспейса — валидный JSON внутри присваивания:</p>
+<pre><code>window.START_PAGE = {
+  "id": "home",
+  "title": "Дом",
+  "subtitle": "всё под рукой",
+  "groups": [
+    { "id": "g1", "title": "Proxmox", "items": [
+      { "id": "i1", "title": "PVE 1", "url": "https://192.168.3.10:8006",
+        "note": "основной", "tags": ["pve"], "fav": true, "checks": [] }
+    ] }
+  ]
+};</code></pre>
+<p>Обязательные поля элемента — <code>title</code> и <code>url</code>. Остальное можно не указывать.</p>
+<div class="note">Сервер читает эти файлы как JSON (после <code>window.START_PAGE =</code>), поэтому комментарии внутри объекта не поддерживаются. Комментарий <em>до</em> <code>window.</code> — можно.</div>
+
+<h2 id="workspaces">Воркспейсы</h2>
+<p>Воркспейс — отдельный набор групп и ссылок: «Дом», «Работа», «Лаборатория». Переключатель — в левом верхнем углу.</p>
+<p>Как выбирается при открытии:</p>
+<ol>
+  <li><code>?ws=work</code> в адресе (можно сделать закладку на конкретный воркспейс);</li>
+  <li><code>#/work</code> в адресе;</li>
+  <li>последний открытый — запоминается в браузере;</li>
+  <li><code>defaultWorkspace</code> из <code>data/manifest.js</code>;</li>
+  <li>первый в списке.</li>
+</ol>
+<p>Новый воркспейс: скопируйте <code>data/home.js</code> в <code>data/lab.js</code>, поменяйте <code>id</code>/<code>title</code> и добавьте строку в манифест:</p>
+<pre><code>{ "id": "lab", "title": "Лаборатория", "file": "data/lab.js" }</code></pre>
+<p>С сервером кнопка «Создать копию» в окне блокировки делает это автоматически.</p>
+
+<h2 id="edit">Редактирование</h2>
+<p>Кнопка <kbd>✎</kbd> включает режим правки. Без неё изменить ничего нельзя: клики только открывают ссылки.</p>
+<ul>
+  <li><b>+ Группа</b> — новая группа;</li>
+  <li><b>+ Элемент</b> — карточка: название и ссылка обязательны, заметка, теги, группа, избранное;</li>
+  <li><b>Импорт закладок</b> — загрузите HTML-экспорт Firefox/Chrome, ссылки попадут в новую группу;</li>
+  <li><b>⭐</b> — в избранное (появится блок сверху);</li>
+  <li><b>⠿</b> — перетаскивание: внутри группы и между группами; заголовки групп тоже перетаскиваются; в режиме правки у карточки есть <b>↑</b>/<b>↓</b> — перенести элемент выше или ниже;</li>
+  <li><b>Сохранить</b> — запись файла через сервер.</li>
+</ul>
+<p>Удаление можно отменить кнопкой «Вернуть» в уведомлении. При выходе из правки с несохранёнными изменениями страница предупредит.</p>
+
+<h2 id="save">Сохранение и блокировки</h2>
+<p>Блокируется только <b>запись</b>, чтение — всегда свободно. Владелец — тот, кто открыл первым; он шлёт heartbeat каждые 8 секунд, блокировка протухает через 25 секунд.</p>
+<table>
+  <tr><th>Ситуация</th><th>Поведение</th></tr>
+  <tr><td>Сервер + второе окно</td><td>«Файл занят»: только чтение, создать копию (сервер сделает файл и запись в манифесте) или забрать управление, если владелец протух.</td></tr>
+  <tr><td>Без сервера</td><td>Страница показывает «Нужен сервер». Запись, блокировки и проверки возможны только через сервер.</td></tr>
+  <tr><td>Разные серверы на разных машинах</td><td>Не синхронизируются: побеждает последний записавший.</td></tr>
+</table>
+<p>С сервером сохранение пишет файл атомарно и оставляет <code>.bak</code> с предыдущей версией.</p>
+
+<h2 id="themes">Темы</h2>
+<p>В настройках <kbd>⚙</kbd> — одиннадцать тем: тёмная и светлая базовые, кремовая, «Бумага», Aurora с переливающимся фоном, Apple (тёмная и светлая), Android (тёмная и светлая), «Песок» (тёплая светлая) и «Графит» (тёмная нейтральная). Рядом — тумблер «Анимации»: снимает все переходы и переливы, включая Aurora.</p>
+<p>Своя тема — это CSS-файл с переменными:</p>
+<pre><code>:root[data-theme="my_theme"] {
+  --bg:#101418; --panel:#171d26; --panel-2:#1d2530; --line:#27303d;
+  --text:#e8eef7; --dim:#8a97a8; --accent:#7c9cff; --accent-2:#3ed6a5;
+  --ok:#3fb950; --warn:#d29922; --danger:#f85149;
+  --shadow:0 10px 30px rgba(0,0,0,.3);
+}</code></pre>
+<p>Положите файл в <code>themes/</code> и добавьте строку в <code>themes/manifest.js</code>:</p>
+<pre><code>{ "id": "my_theme", "title": "Моя", "file": "themes/my_theme.css" }</code></pre>
+<p>Если тема не загрузилась — страница останется на тёмной, ничего не сломается.</p>
+
+<h2 id="modules">Модули</h2>
+<p>Модуль — папка в <code>modules/</code>, которую сервер находит сам. HTML и CSS ядра при этом не меняются.</p>
+<pre><code>modules/healthcheck/
+  module.json   { "id": "...", "entry": "module.py", "assets": ["module.css","module.js"] }
+  module.py     def register(api): api.post("/check", handler)
+  module.css    стили, всё под своим префиксом
+  module.js     window.Svod.registerModule({ id, onRender, editorSection })</code></pre>
+<p>Сервер монтирует маршруты по адресу <code>/api/modules/&lt;id&gt;/…</code> и отдаёт файлы модуля как статику. Страница получает список модулей через <code>/api/modules</code> и сама подключает их CSS и JS.</p>
+<p>Контракт JS-модуля:</p>
+<ul>
+  <li><code>Svod.state</code> — состояние приложения (страница, режим, блокировка);</li>
+  <li><code>Svod.api(path, opts)</code> — запрос к серверу с учётом адреса;</li>
+  <li><code>Svod.registerModule({ id, onBoot, onRender, editorSection })</code>;</li>
+  <li><code>editorSection(item)</code> возвращает <code>{ el, get() }</code> — секцию в редакторе элемента.</li>
+</ul>
+<div class="note">Модули работают только через сервер: им нужен <code>/api</code>. Без него страница остаётся рабочей, но без проверок.</div>
+
+<h2 id="health">Проверки доступности</h2>
+<p>Модуль <code>healthcheck</code> ставит кружок на карточку, на плитку и на плитку группы (агрегат по всем её сервисам): зелёный — все проверки ок, жёлтый — часть молчит, красный — всё недоступно. При наведении на карточку, плитку или группу справа раскрывается панель со списком проверок.</p>
+<ul>
+  <li><b>http / https</b> — запрос к адресу элемента; 401/403 считаются «жив» (типично для Proxmox и Dockge); 5xx — недоступно;</li>
+  <li><b>ping</b> — ICMP до указанного хоста: проверяет, что машина/контейнер отвечает, но не что сервис внутри работает;</li>
+  <li><b>tcp</b> — открыт ли порт (RDP 3389, SSH 22, 1С и т.п.);</li>
+  <li>проверок у элемента может быть несколько, кнопка «+ проверка»;</li>
+  <li>интервал — своё поле у каждой проверки: по умолчанию 5 секунд, допустимо 1–3600;</li>
+  <li>проверки идут только для приватных адресов и только с сервера; результаты не логируются;</li>
+  <li>при скрытой вкладке опрос приостанавливается.</li>
+</ul>
+<p>Хост всегда берётся из ссылки элемента — отдельного поля нет. Для <code>http/https</code> порт берётся из URL, для <code>tcp</code> его можно поправить, для <code>ping</code> порт не нужен.</p>
+<div class="warn note">Для ping нужен системный <code>ping</code> с <code>cap_net_raw</code> (на Ubuntu так по умолчанию). Если прав нет — модуль честно сообщит об этом в подсказке.</div>
+
+<h2 id="search">Поиск</h2>
+<p>Ищет по названию, адресу, заметке, тегам и <b>названию группы</b> — «proxmox» находит всю группу. Понимает транслит и мелкие опечатки: <i>проксмокс</i>, <i>докер</i>, <i>пве</i>.</p>
+<p><kbd>Enter</kbd> открывает первое совпадение, <kbd>1</kbd>…<kbd>9</kbd> — соответствующее, <kbd>Esc</kbd> — сброс.</p>
+
+<h2 id="keys">Горячие клавиши</h2>
+<table>
+  <tr><th>Клавиша</th><th>Действие</th></tr>
+  <tr><td><kbd>/</kbd></td><td>фокус в поиск</td></tr>
+  <tr><td><kbd>Enter</kbd></td><td>открыть первое совпадение</td></tr>
+  <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>открыть N-е совпадение</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>сбросить поиск / закрыть окно</td></tr>
+</table>
+
+<h2 id="faq">Вопросы и проблемы</h2>
+<h3>«Манифест не найден»</h3>
+<p>Нет <code>data/manifest.js</code> — страница работает на встроенном списке. Нажмите «Скачать шаблон» и положите файл в <code>data/</code>.</p>
+<h3>Файл воркспейса не найден</h3>
+<p>Проверьте путь в манифесте и наличие файла. В режиме сервера путь относительный от папки <code>start-page</code>.</p>
+<h3>Порт занят</h3>
+<pre><code>python3 server.py --port 8081</code></pre>
+<h3>Не сохраняется</h3>
+<p>Проверьте, что вы владелец блокировки (карандаш активен). Если файл занят другим окном — закройте его или создайте копию.</p>
+<h3>Нужен сервер</h3>
+<p>Отключён до 1.0.0: без сервера нет записи и проверок. Запустите <code>python3 server.py</code>.</p>
+<h3>Тема не применилась</h3>
+<p>Проверьте путь в <code>themes/manifest.js</code>; при ошибке остаётся тёмная тема.</p>
+<h3>Ping всегда «недоступно»</h3>
+<p>Проверьте, что <code>ping -c 1 адрес</code> работает в терминале от того же пользователя, который запускает сервер.</p>
+
+<h2 id="limits">Ограничения</h2>
+<ul>
+  <li>нет авторизации: не выставляйте сервер в интернет без VPN;</li>
+  <li>блокировка работает в пределах одного сервера; две разные машины с разными серверами не синхронизируются;</li>
+  <li>проверки — только для приватных адресов (защита от SSRF);</li>
+  <li>без сервера страница не работает — HTML-режим убран;</li>
+  <li>иконки — буквенные; внешние favicon не запрашиваются, чтобы не светить список сервисов наружу.</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

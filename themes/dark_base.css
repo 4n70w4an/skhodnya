@@ -1,0 +1,16 @@
+/* Сходня — базовая тёмная тема (дефолт). Все переменные — здесь. */
+:root[data-theme="dark_base"] {
+  color-scheme: dark;
+  --bg: #0e1116;
+  --panel: #151a22;
+  --panel-2: #1b2230;
+  --line: #2b3648;
+  --text: #e6edf7;
+  --dim: #97a5b9;
+  --accent: #5b9dff;
+  --accent-2: #39d3a0;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --danger: #f85149;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .28);
+}

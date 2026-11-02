@@ -112,6 +112,10 @@
   .grid.list .note,.grid.list .tags{display:none}
 
   .acts{position:absolute;top:7px;right:7px;display:flex;gap:4px;opacity:0;pointer-events:none;transition:opacity .12s}
+  .cardwrap.editing .acts{opacity:1;pointer-events:auto}
+  .grid.tiles .cardwrap.editing .acts{position:static;justify-content:center;flex-wrap:wrap;gap:3px;margin-top:6px}
+  .grid.tiles .cardwrap.editing .card{height:auto}
+  .cardwrap.editing .hc-dot,.cardwrap.editing .hc-pane,.cardwrap.editing .hc-inline{display:none !important}
   .cardwrap:hover .acts,.cardwrap:focus-within .acts{opacity:1;pointer-events:auto}
   .mini{padding:3px 6px;font-size:12px;background:var(--panel-2)}
   .grip{cursor:grab;color:var(--dim);padding:3px 2px;font-size:12px}
@@ -429,7 +433,7 @@ const state = {
 };
 
 window.Svod = {
-  version: '0.1.0',
+  version: '0.1.1',
   state,
   esc, hostOf, uid, tr, norm,
   api(path, opts) {
@@ -840,6 +844,7 @@ function cardWrap(it, gi, ii, groupTitle) {
       '<button class="mini" data-action="item-up" data-gi="' + gi + '" data-ii="' + ii + '" title="Выше">↑</button>' +
       '<button class="mini" data-action="item-down" data-gi="' + gi + '" data-ii="' + ii + '" title="Ниже">↓</button>' +
       '<button class="mini" data-action="item-edit" data-gi="' + gi + '" data-ii="' + ii + '" title="Изменить">✎</button>' +
+      '<button class="mini" data-action="item-copy" data-gi="' + gi + '" data-ii="' + ii + '" title="Копировать">⧉</button>' +
       '<button class="mini danger" data-action="item-del" data-gi="' + gi + '" data-ii="' + ii + '" title="Удалить">✕</button>' +
       '<span class="grip" title="Перетащить">⠿</span></div>'
     : '<div class="acts"><button class="mini" data-action="copy" data-gi="' + gi + '" data-ii="' + ii + '" title="Скопировать адрес">⧉</button></div>';
@@ -848,7 +853,7 @@ function cardWrap(it, gi, ii, groupTitle) {
   const cardTag = isLink ? 'a' : 'div';
   const href = isLink ? ' href="' + esc(it.url) + '" target="_blank" rel="noreferrer"' : '';
   const tileAttr = tileMode ? ' data-action="tile-open" role="button" tabindex="0"' : '';
-  return '<div class="cardwrap" data-gi="' + gi + '" data-ii="' + ii + '" data-id="' + esc(it.id) + '" data-search="' + search + '"' +
+  return '<div class="cardwrap' + (editing ? ' editing' : '') + '" data-gi="' + gi + '" data-ii="' + ii + '" data-id="' + esc(it.id) + '" data-search="' + search + '"' +
     (editing ? ' draggable="true"' : '') + '>' +
     '<' + cardTag + ' class="card"' + href + tileAttr + '>' + inner + '</' + cardTag + '>' + acts + '</div>';
 }
@@ -1007,7 +1012,7 @@ function openItemEditor(gi, ii, preset) {
   const isNew = ii === null || ii === undefined;
   const g = state.page.groups[gi];
   const item = isNew
-    ? Object.assign({ id: uid(), title: '', url: '', note: '', tags: [], fav: false, checks: [] }, preset || {})
+    ? Object.assign({ title: '', url: '', note: '', tags: [], fav: false, checks: [] }, preset || {}, { id: uid() })
     : JSON.parse(JSON.stringify(g.items[ii]));
   const form = document.createElement('form');
   form.className = 'form';
@@ -1388,6 +1393,13 @@ document.addEventListener('click', (e) => {
     case 'del-group': deleteGroup(gi); break;
     case 'add-group': openGroupEditor(null); break;
     case 'item-edit': openItemEditor(gi, ii); break;
+    case 'item-copy': {
+      const src = state.page.groups[gi].items[ii];
+      const copy = JSON.parse(JSON.stringify(src));
+      copy.title = (src.title || '') + ' (копия)';
+      openItemEditor(gi, null, copy);
+      break;
+    }
     case 'item-del': deleteItem(gi, ii); break;
     case 'item-fav': toggleFav(gi, ii); break;
     case 'item-up': moveItem(gi, ii, -1); break;

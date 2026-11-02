@@ -133,3 +133,38 @@
   .hc-row, .hc-row.no-port { grid-template-columns: 1fr 1fr; }
   .hc-row .hc-target { grid-column: 1 / -1; }
 }
+
+/* список: статусы прямо в строке, без всплывающего окна */
+.hc-inline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  margin-right: 26px;
+  max-width: 55%;
+  justify-content: flex-end;
+}
+.hc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  font-size: 10.5px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.hc-chip i { width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+.hc-chip.up i { background: var(--ok); }
+.hc-chip.down i { background: var(--danger); }
+.grid.list .hc-dot, .grid.list .hc-pane { display: none; }
+.grid.list .cardwrap .acts { top: 50%; transform: translateY(-50%); }
+
+/* на узком экране статусы не показываем, чтобы не ломать строку */
+@media (max-width: 900px) {
+  .hc-inline { display: none; }
+  .hc-pane { display: none; }
+}

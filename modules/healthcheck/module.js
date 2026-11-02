@@ -95,11 +95,41 @@
     return anyDown ? 'down' : allOk ? 'up' : 'wait';
   }
 
+  function clearStatus(wrap) {
+    wrap.querySelectorAll('.hc-dot, .hc-pane, .hc-inline').forEach((el) => el.remove());
+  }
+
   function paintCards() {
     const page = S.state.page;
+    const list = S.state.view === 'list';
+    const editing = !!S.state.edit;
     page.groups.forEach((g) => (g.items || []).forEach((it) => {
       const cs = checksOf(it);
       document.querySelectorAll('.cardwrap[data-id="' + it.id + '"]').forEach((wrap) => {
+        if (editing) { clearStatus(wrap); return; }
+        const card = wrap.querySelector('.card');
+        if (list) {
+          wrap.querySelectorAll('.hc-dot, .hc-pane').forEach((el) => el.remove());
+          let inline = card && card.querySelector('.hc-inline');
+          if (!cs.length) { if (inline) inline.remove(); return; }
+          if (!inline && card) {
+            inline = document.createElement('span');
+            inline.className = 'hc-inline';
+            card.appendChild(inline);
+          }
+          if (!inline) return;
+          inline.innerHTML = cs.map((c, i) => {
+            const r = results.get(keyOf(it, i));
+            const st = statusClass(r);
+            const ms = r && r.ms != null ? Math.round(r.ms) + ' мс' : '—';
+            return '<span class="hc-chip ' + st + '" title="' + S.esc(c.type + ' ' + targetOf(it, c)) + '"><i></i>' +
+              S.esc(c.type) + ' ' + ms + '</span>';
+          }).join('');
+          return;
+        }
+
+        const inline = card && card.querySelector('.hc-inline');
+        if (inline) inline.remove();
         let dot = wrap.querySelector('.hc-dot');
         if (!cs.length) {
           if (dot) dot.remove();
